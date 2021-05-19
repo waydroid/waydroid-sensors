@@ -362,13 +362,13 @@ int SensorFW::GetOrientationEvent(quint64 *ts, int *degree) {
     *ts = data->orientation_event.timestamp_;
     switch (data->orientation_event.orientation_)
     {
-    case PoseData::Orientation::LeftUp:
+    case PoseData::Orientation::RightUp:
         *degree = 1;
         break;
     case PoseData::Orientation::BottomUp:
         *degree = 2;
         break;
-    case PoseData::Orientation::RightUp:
+    case PoseData::Orientation::LeftUp:
         *degree = 3;
         break;
     default:

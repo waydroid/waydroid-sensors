@@ -187,7 +187,7 @@ static int sensor_device_poll_event_locked(SensorDevice* dev)
     if (dev->mSensorFWDevice->GetProximityEvent(&ts, &value, &isNear) == 0) {
         if (ts != dev->last_TimeStamp[ID_PROXIMITY]) {
             new_sensors |= SENSORS_PROXIMITY;
-            events[ID_PROXIMITY].u.scalar = value;
+            events[ID_PROXIMITY].u.scalar = isNear ? 0 : 5;
             events[ID_PROXIMITY].sensorType = SENSOR_TYPE_PROXIMITY;
             dev->last_TimeStamp[ID_PROXIMITY] = ts;
         }
@@ -491,8 +491,8 @@ std::vector<sensor_t> Sensors::getSensorsList() {
             sensor_info.version = 1;
             sensor_info.type = SENSOR_TYPE_PROXIMITY;
             sensor_info.typeAsString.data.str = "android.sensor.proximity";
-            sensor_info.maxRange = 1.0;
-            sensor_info.resolution = 1.0;
+            sensor_info.maxRange = 5.0;
+            sensor_info.resolution = 5.0;
             sensor_info.power = 20.0;
             sensor_info.minDelay = 0;
             sensor_info.fifoReservedEventCount = 0;

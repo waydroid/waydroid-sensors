@@ -1,6 +1,6 @@
 /*
  * Copyright © 2020 UBports foundation
- * Copyright © 2021 Anbox Project.
+ * Copyright © 2021 Waydroid Project.
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3,
@@ -27,14 +27,14 @@ namespace
 auto const null_handler = [](AccelerationData){};
 }
 
-anbox::core::SensorfwAccelerometerSensor::SensorfwAccelerometerSensor(
+waydroid::core::SensorfwAccelerometerSensor::SensorfwAccelerometerSensor(
     std::string const &dbus_bus_address)
     : Sensorfw(dbus_bus_address, "Accelerometer", PluginType::ACCELEROMETER),
       handler{null_handler}
 {
 }
 
-anbox::core::HandlerRegistration anbox::core::SensorfwAccelerometerSensor::register_accelerometer_handler(
+waydroid::core::HandlerRegistration waydroid::core::SensorfwAccelerometerSensor::register_accelerometer_handler(
     AccelerometerHandler const& handler)
 {
     return EventLoopHandlerRegistration{
@@ -43,7 +43,7 @@ anbox::core::HandlerRegistration anbox::core::SensorfwAccelerometerSensor::regis
         [this]{ this->handler = null_handler; }};
 }
 
-void anbox::core::SensorfwAccelerometerSensor::enable_accelerometer_events()
+void waydroid::core::SensorfwAccelerometerSensor::enable_accelerometer_events()
 {
     dbus_event_loop.enqueue(
         [this]
@@ -52,7 +52,7 @@ void anbox::core::SensorfwAccelerometerSensor::enable_accelerometer_events()
         }).get();
 }
 
-void anbox::core::SensorfwAccelerometerSensor::disable_accelerometer_events()
+void waydroid::core::SensorfwAccelerometerSensor::disable_accelerometer_events()
 {
     dbus_event_loop.enqueue(
         [this]
@@ -61,7 +61,7 @@ void anbox::core::SensorfwAccelerometerSensor::disable_accelerometer_events()
         }).get();
 }
 
-void anbox::core::SensorfwAccelerometerSensor::data_recived_impl()
+void waydroid::core::SensorfwAccelerometerSensor::data_recived_impl()
 {
     QVector<AccelerationData> values;
     if(!m_socket->read<AccelerationData>(values))

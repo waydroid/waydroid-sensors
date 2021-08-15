@@ -1,6 +1,6 @@
 /*
  * Copyright © 2020 UBports foundation
- * Copyright © 2021 Anbox Project.
+ * Copyright © 2021 Waydroid Project.
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3,
@@ -27,14 +27,14 @@ namespace
 auto const null_handler = [](CalibratedMagneticFieldData) {};
 }
 
-anbox::core::SensorfwMagnetometerSensor::SensorfwMagnetometerSensor(
+waydroid::core::SensorfwMagnetometerSensor::SensorfwMagnetometerSensor(
     std::string const &dbus_bus_address)
     : Sensorfw(dbus_bus_address, "Magnetometer", PluginType::MAGNETOMETER),
       handler{null_handler}
 {
 }
 
-anbox::core::HandlerRegistration anbox::core::SensorfwMagnetometerSensor::register_magnetometer_handler(
+waydroid::core::HandlerRegistration waydroid::core::SensorfwMagnetometerSensor::register_magnetometer_handler(
     MagnetometerHandler const& handler)
 {
     return EventLoopHandlerRegistration{
@@ -43,7 +43,7 @@ anbox::core::HandlerRegistration anbox::core::SensorfwMagnetometerSensor::regist
         [this]{ this->handler = null_handler; }};
 }
 
-void anbox::core::SensorfwMagnetometerSensor::enable_magnetometer_events()
+void waydroid::core::SensorfwMagnetometerSensor::enable_magnetometer_events()
 {
     dbus_event_loop.enqueue(
         [this]
@@ -52,7 +52,7 @@ void anbox::core::SensorfwMagnetometerSensor::enable_magnetometer_events()
         }).get();
 }
 
-void anbox::core::SensorfwMagnetometerSensor::disable_magnetometer_events()
+void waydroid::core::SensorfwMagnetometerSensor::disable_magnetometer_events()
 {
     dbus_event_loop.enqueue(
         [this]
@@ -61,7 +61,7 @@ void anbox::core::SensorfwMagnetometerSensor::disable_magnetometer_events()
         }).get();
 }
 
-void anbox::core::SensorfwMagnetometerSensor::data_recived_impl()
+void waydroid::core::SensorfwMagnetometerSensor::data_recived_impl()
 {
     QVector<CalibratedMagneticFieldData> values;
     if(!m_socket->read<CalibratedMagneticFieldData>(values))

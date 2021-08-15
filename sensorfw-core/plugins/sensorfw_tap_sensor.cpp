@@ -1,6 +1,6 @@
 /*
  * Copyright © 2020 UBports foundation
- * Copyright © 2021 Anbox Project.
+ * Copyright © 2021 Waydroid Project.
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3,
@@ -27,14 +27,14 @@ namespace
 auto const null_handler = [](TapData){};
 }
 
-anbox::core::SensorfwTapSensor::SensorfwTapSensor(
+waydroid::core::SensorfwTapSensor::SensorfwTapSensor(
     std::string const &dbus_bus_address)
     : Sensorfw(dbus_bus_address, "Tap", PluginType::TAP),
       handler{null_handler}
 {
 }
 
-anbox::core::HandlerRegistration anbox::core::SensorfwTapSensor::register_tap_handler(
+waydroid::core::HandlerRegistration waydroid::core::SensorfwTapSensor::register_tap_handler(
     TapHandler const& handler)
 {
     return EventLoopHandlerRegistration{
@@ -43,7 +43,7 @@ anbox::core::HandlerRegistration anbox::core::SensorfwTapSensor::register_tap_ha
         [this]{ this->handler = null_handler; }};
 }
 
-void anbox::core::SensorfwTapSensor::enable_tap_events()
+void waydroid::core::SensorfwTapSensor::enable_tap_events()
 {
     dbus_event_loop.enqueue(
         [this]
@@ -52,7 +52,7 @@ void anbox::core::SensorfwTapSensor::enable_tap_events()
         }).get();
 }
 
-void anbox::core::SensorfwTapSensor::disable_tap_events()
+void waydroid::core::SensorfwTapSensor::disable_tap_events()
 {
     dbus_event_loop.enqueue(
         [this]
@@ -61,7 +61,7 @@ void anbox::core::SensorfwTapSensor::disable_tap_events()
         }).get();
 }
 
-void anbox::core::SensorfwTapSensor::data_recived_impl()
+void waydroid::core::SensorfwTapSensor::data_recived_impl()
 {
     QVector<TapData> values;
     if(!m_socket->read<TapData>(values))

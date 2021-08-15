@@ -1,6 +1,6 @@
 /*
  * Copyright © 2020 UBports foundation
- * Copyright © 2021 Anbox Project.
+ * Copyright © 2021 Waydroid Project.
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3,
@@ -27,14 +27,14 @@ namespace
 auto const null_handler = [](TimedXyzData){};
 }
 
-anbox::core::SensorfwRotationSensor::SensorfwRotationSensor(
+waydroid::core::SensorfwRotationSensor::SensorfwRotationSensor(
     std::string const &dbus_bus_address)
     : Sensorfw(dbus_bus_address, "Rotation", PluginType::ROTATION),
       handler{null_handler}
 {
 }
 
-anbox::core::HandlerRegistration anbox::core::SensorfwRotationSensor::register_rotation_handler(
+waydroid::core::HandlerRegistration waydroid::core::SensorfwRotationSensor::register_rotation_handler(
     RotationHandler const& handler)
 {
     return EventLoopHandlerRegistration{
@@ -43,7 +43,7 @@ anbox::core::HandlerRegistration anbox::core::SensorfwRotationSensor::register_r
         [this]{ this->handler = null_handler; }};
 }
 
-void anbox::core::SensorfwRotationSensor::enable_rotation_events()
+void waydroid::core::SensorfwRotationSensor::enable_rotation_events()
 {
     dbus_event_loop.enqueue(
         [this]
@@ -52,7 +52,7 @@ void anbox::core::SensorfwRotationSensor::enable_rotation_events()
         }).get();
 }
 
-void anbox::core::SensorfwRotationSensor::disable_rotation_events()
+void waydroid::core::SensorfwRotationSensor::disable_rotation_events()
 {
     dbus_event_loop.enqueue(
         [this]
@@ -61,7 +61,7 @@ void anbox::core::SensorfwRotationSensor::disable_rotation_events()
         }).get();
 }
 
-void anbox::core::SensorfwRotationSensor::data_recived_impl()
+void waydroid::core::SensorfwRotationSensor::data_recived_impl()
 {
     QVector<TimedXyzData> values;
     if(!m_socket->read<TimedXyzData>(values))

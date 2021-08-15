@@ -1,5 +1,5 @@
 /*
- * Copyright © 2021 Anbox Project.
+ * Copyright © 2021 Waydroid Project.
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3,
@@ -32,7 +32,7 @@
 
 #include <vector>
 
-namespace anbox {
+namespace waydroid {
 
 #define MAX_NUM_SENSORS 11
 
@@ -101,16 +101,16 @@ typedef struct {
     gboolean sensorEventEnable[MAX_NUM_SENSORS];
 
     /* Sensors */
-    std::shared_ptr<anbox::core::SensorfwAccelerometerSensor> accelerometer_sensor;
-    std::shared_ptr<anbox::core::SensorfwGyroscopeSensor> gyroscope_sensor;
-    std::shared_ptr<anbox::core::SensorfwHumiditySensor> humidity_sensor;
-    std::shared_ptr<anbox::core::SensorfwLightSensor> light_sensor;
-    std::shared_ptr<anbox::core::SensorfwMagnetometerSensor> magnetometer_sensor;
-    std::shared_ptr<anbox::core::SensorfwOrientationSensor> orientation_sensor;
-    std::shared_ptr<anbox::core::SensorfwPressureSensor> pressure_sensor;
-    std::shared_ptr<anbox::core::SensorfwProximitySensor> proximity_sensor;
-    std::shared_ptr<anbox::core::SensorfwStepcounterSensor> stepcounter_sensor;
-    std::shared_ptr<anbox::core::SensorfwTemperatureSensor> temperature_sensor;
+    std::shared_ptr<waydroid::core::SensorfwAccelerometerSensor> accelerometer_sensor;
+    std::shared_ptr<waydroid::core::SensorfwGyroscopeSensor> gyroscope_sensor;
+    std::shared_ptr<waydroid::core::SensorfwHumiditySensor> humidity_sensor;
+    std::shared_ptr<waydroid::core::SensorfwLightSensor> light_sensor;
+    std::shared_ptr<waydroid::core::SensorfwMagnetometerSensor> magnetometer_sensor;
+    std::shared_ptr<waydroid::core::SensorfwOrientationSensor> orientation_sensor;
+    std::shared_ptr<waydroid::core::SensorfwPressureSensor> pressure_sensor;
+    std::shared_ptr<waydroid::core::SensorfwProximitySensor> proximity_sensor;
+    std::shared_ptr<waydroid::core::SensorfwStepcounterSensor> stepcounter_sensor;
+    std::shared_ptr<waydroid::core::SensorfwTemperatureSensor> temperature_sensor;
 
     /* Events */
     AccelerationData accelerometer_event;
@@ -147,11 +147,11 @@ struct SensorFW {
 
 private:
     SensorData *data;
-    std::vector<anbox::core::HandlerRegistration> mRegistrations;
+    std::vector<waydroid::core::HandlerRegistration> mRegistrations;
 
     void RegisterSensors();
 };
 
-}  // namespace anbox
+}  // namespace waydroid
 
 #endif  // SENSORHW_H_

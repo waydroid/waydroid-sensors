@@ -1,6 +1,6 @@
 /*
  * Copyright © 2020 UBports foundation
- * Copyright © 2021 Anbox Project.
+ * Copyright © 2021 Waydroid Project.
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3,
@@ -27,14 +27,14 @@ namespace
 auto const null_handler = [](TimedUnsigned){};
 }
 
-anbox::core::SensorfwStepcounterSensor::SensorfwStepcounterSensor(
+waydroid::core::SensorfwStepcounterSensor::SensorfwStepcounterSensor(
     std::string const &dbus_bus_address)
     : Sensorfw(dbus_bus_address, "Stepcounter", PluginType::STEPCOUNTER),
       handler{null_handler}
 {
 }
 
-anbox::core::HandlerRegistration anbox::core::SensorfwStepcounterSensor::register_stepcounter_handler(
+waydroid::core::HandlerRegistration waydroid::core::SensorfwStepcounterSensor::register_stepcounter_handler(
     StepcounterHandler const& handler)
 {
     return EventLoopHandlerRegistration{
@@ -43,7 +43,7 @@ anbox::core::HandlerRegistration anbox::core::SensorfwStepcounterSensor::registe
         [this]{ this->handler = null_handler; }};
 }
 
-void anbox::core::SensorfwStepcounterSensor::enable_stepcounter_events()
+void waydroid::core::SensorfwStepcounterSensor::enable_stepcounter_events()
 {
     dbus_event_loop.enqueue(
         [this]
@@ -52,7 +52,7 @@ void anbox::core::SensorfwStepcounterSensor::enable_stepcounter_events()
         }).get();
 }
 
-void anbox::core::SensorfwStepcounterSensor::disable_stepcounter_events()
+void waydroid::core::SensorfwStepcounterSensor::disable_stepcounter_events()
 {
     dbus_event_loop.enqueue(
         [this]
@@ -61,7 +61,7 @@ void anbox::core::SensorfwStepcounterSensor::disable_stepcounter_events()
         }).get();
 }
 
-void anbox::core::SensorfwStepcounterSensor::data_recived_impl()
+void waydroid::core::SensorfwStepcounterSensor::data_recived_impl()
 {
     QVector<TimedUnsigned> values;
     if(!m_socket->read<TimedUnsigned>(values))

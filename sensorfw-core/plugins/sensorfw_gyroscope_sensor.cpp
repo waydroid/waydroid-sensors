@@ -1,6 +1,6 @@
 /*
  * Copyright © 2020 UBports foundation
- * Copyright © 2021 Anbox Project.
+ * Copyright © 2021 Waydroid Project.
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3,
@@ -27,14 +27,14 @@ namespace
 auto const null_handler = [](TimedXyzData){};
 }
 
-anbox::core::SensorfwGyroscopeSensor::SensorfwGyroscopeSensor(
+waydroid::core::SensorfwGyroscopeSensor::SensorfwGyroscopeSensor(
     std::string const &dbus_bus_address)
     : Sensorfw(dbus_bus_address, "Gyroscope", PluginType::GYROSCOPE),
       handler{null_handler}
 {
 }
 
-anbox::core::HandlerRegistration anbox::core::SensorfwGyroscopeSensor::register_gyroscope_handler(
+waydroid::core::HandlerRegistration waydroid::core::SensorfwGyroscopeSensor::register_gyroscope_handler(
     GyroscopeHandler const& handler)
 {
     return EventLoopHandlerRegistration{
@@ -43,7 +43,7 @@ anbox::core::HandlerRegistration anbox::core::SensorfwGyroscopeSensor::register_
         [this]{ this->handler = null_handler; }};
 }
 
-void anbox::core::SensorfwGyroscopeSensor::enable_gyroscope_events()
+void waydroid::core::SensorfwGyroscopeSensor::enable_gyroscope_events()
 {
     dbus_event_loop.enqueue(
         [this]
@@ -52,7 +52,7 @@ void anbox::core::SensorfwGyroscopeSensor::enable_gyroscope_events()
         }).get();
 }
 
-void anbox::core::SensorfwGyroscopeSensor::disable_gyroscope_events()
+void waydroid::core::SensorfwGyroscopeSensor::disable_gyroscope_events()
 {
     dbus_event_loop.enqueue(
         [this]
@@ -61,7 +61,7 @@ void anbox::core::SensorfwGyroscopeSensor::disable_gyroscope_events()
         }).get();
 }
 
-void anbox::core::SensorfwGyroscopeSensor::data_recived_impl()
+void waydroid::core::SensorfwGyroscopeSensor::data_recived_impl()
 {
     QVector<TimedXyzData> values;
     if(!m_socket->read<TimedXyzData>(values))

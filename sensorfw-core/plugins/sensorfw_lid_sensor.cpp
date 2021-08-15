@@ -1,6 +1,6 @@
 /*
  * Copyright © 2020 UBports foundation
- * Copyright © 2021 Anbox Project.
+ * Copyright © 2021 Waydroid Project.
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3,
@@ -27,14 +27,14 @@ namespace
 auto const null_handler = [](LidData){};
 }
 
-anbox::core::SensorfwLidSensor::SensorfwLidSensor(
+waydroid::core::SensorfwLidSensor::SensorfwLidSensor(
     std::string const &dbus_bus_address)
     : Sensorfw(dbus_bus_address, "Lid", PluginType::LID),
       handler{null_handler}
 {
 }
 
-anbox::core::HandlerRegistration anbox::core::SensorfwLidSensor::register_lid_handler(
+waydroid::core::HandlerRegistration waydroid::core::SensorfwLidSensor::register_lid_handler(
     LidHandler const& handler)
 {
     return EventLoopHandlerRegistration{
@@ -43,7 +43,7 @@ anbox::core::HandlerRegistration anbox::core::SensorfwLidSensor::register_lid_ha
         [this]{ this->handler = null_handler; }};
 }
 
-void anbox::core::SensorfwLidSensor::enable_lid_events()
+void waydroid::core::SensorfwLidSensor::enable_lid_events()
 {
     dbus_event_loop.enqueue(
         [this]
@@ -52,7 +52,7 @@ void anbox::core::SensorfwLidSensor::enable_lid_events()
         }).get();
 }
 
-void anbox::core::SensorfwLidSensor::disable_lid_events()
+void waydroid::core::SensorfwLidSensor::disable_lid_events()
 {
     dbus_event_loop.enqueue(
         [this]
@@ -61,7 +61,7 @@ void anbox::core::SensorfwLidSensor::disable_lid_events()
         }).get();
 }
 
-void anbox::core::SensorfwLidSensor::data_recived_impl()
+void waydroid::core::SensorfwLidSensor::data_recived_impl()
 {
     QVector<LidData> values;
     if(!m_socket->read<LidData>(values))

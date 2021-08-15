@@ -1,6 +1,6 @@
 /*
  * Copyright © 2020 UBports foundation
- * Copyright © 2021 Anbox Project.
+ * Copyright © 2021 Waydroid Project.
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3,
@@ -27,14 +27,14 @@ namespace
 auto const null_handler = [](TimedUnsigned){};
 }
 
-anbox::core::SensorfwTemperatureSensor::SensorfwTemperatureSensor(
+waydroid::core::SensorfwTemperatureSensor::SensorfwTemperatureSensor(
     std::string const &dbus_bus_address)
     : Sensorfw(dbus_bus_address, "Temperature", PluginType::TEMPERATURE),
       handler{null_handler}
 {
 }
 
-anbox::core::HandlerRegistration anbox::core::SensorfwTemperatureSensor::register_temperature_handler(
+waydroid::core::HandlerRegistration waydroid::core::SensorfwTemperatureSensor::register_temperature_handler(
     TemperatureHandler const& handler)
 {
     return EventLoopHandlerRegistration{
@@ -43,7 +43,7 @@ anbox::core::HandlerRegistration anbox::core::SensorfwTemperatureSensor::registe
         [this]{ this->handler = null_handler; }};
 }
 
-void anbox::core::SensorfwTemperatureSensor::enable_temperature_events()
+void waydroid::core::SensorfwTemperatureSensor::enable_temperature_events()
 {
     dbus_event_loop.enqueue(
         [this]
@@ -52,7 +52,7 @@ void anbox::core::SensorfwTemperatureSensor::enable_temperature_events()
         }).get();
 }
 
-void anbox::core::SensorfwTemperatureSensor::disable_temperature_events()
+void waydroid::core::SensorfwTemperatureSensor::disable_temperature_events()
 {
     dbus_event_loop.enqueue(
         [this]
@@ -61,7 +61,7 @@ void anbox::core::SensorfwTemperatureSensor::disable_temperature_events()
         }).get();
 }
 
-void anbox::core::SensorfwTemperatureSensor::data_recived_impl()
+void waydroid::core::SensorfwTemperatureSensor::data_recived_impl()
 {
     QVector<TimedUnsigned> values;
     if(!m_socket->read<TimedUnsigned>(values))

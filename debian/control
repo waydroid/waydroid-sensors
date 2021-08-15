@@ -1,4 +1,4 @@
-Source: anbox-sensors
+Source: waydroid-sensors
 Section: admin
 Priority: optional
 Build-Depends: cmake (>= 2.8.10),
@@ -12,13 +12,13 @@ Build-Depends: cmake (>= 2.8.10),
                qtbase5-dev,
 Maintainer: Erfan Abdi <erfangplus@gmail.com>
 Standards-Version: 3.9.5
-Homepage: https://github.com/Anbox-halium/anbox-sensors
+Homepage: https://github.com/WayDroid/waydroid-sensors
 
-Package: anbox-sensors
+Package: waydroid-sensors
 Section: libs
 Architecture: any
 Depends: ${misc:Depends},
          ${shlibs:Depends},
          libsensorfw-qt5-plugins,
-Description: Provides android sensors HAL using libgbinder to anbox
+Description: Provides android sensors HAL using libgbinder to waydroid
  Using sensorfw dbus and socket.

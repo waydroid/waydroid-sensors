@@ -1,10 +1,10 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: anbox-sensors
+Upstream-Name: waydroid-sensors
 Upstream-Contact: Erfan Abdi <erfangplus@gmail.com>
-Source: https://github.com/Anbox-halium/anbox-sensors
+Source: https://github.com/WayDroid/waydroid-sensors
 
 Files: *
-Copyright: 2021 Anbox project, Erfan Abdi <erfangplus@gmail.com>
+Copyright: 2021 Waydroid project, Erfan Abdi <erfangplus@gmail.com>
 License: GPL-3
 
 License: GPL-3

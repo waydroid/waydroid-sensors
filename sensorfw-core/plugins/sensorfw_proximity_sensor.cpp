@@ -1,6 +1,6 @@
 /*
  * Copyright © 2020 UBports foundation
- * Copyright © 2021 Anbox Project.
+ * Copyright © 2021 Waydroid Project.
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3,
@@ -27,14 +27,14 @@ namespace
 auto const null_handler = [](ProximityData){};
 }
 
-anbox::core::SensorfwProximitySensor::SensorfwProximitySensor(
+waydroid::core::SensorfwProximitySensor::SensorfwProximitySensor(
     std::string const& dbus_bus_address)
     : Sensorfw(dbus_bus_address, "Proximity", PluginType::PROXIMITY),
       handler{null_handler}
 {
 }
 
-anbox::core::HandlerRegistration anbox::core::SensorfwProximitySensor::register_proximity_handler(
+waydroid::core::HandlerRegistration waydroid::core::SensorfwProximitySensor::register_proximity_handler(
     ProximityHandler const& handler)
 {
     return EventLoopHandlerRegistration{
@@ -43,7 +43,7 @@ anbox::core::HandlerRegistration anbox::core::SensorfwProximitySensor::register_
         [this]{ this->handler = null_handler; }};
 }
 
-void anbox::core::SensorfwProximitySensor::enable_proximity_events()
+void waydroid::core::SensorfwProximitySensor::enable_proximity_events()
 {
     dbus_event_loop.enqueue(
         [this]
@@ -52,7 +52,7 @@ void anbox::core::SensorfwProximitySensor::enable_proximity_events()
         }).get();
 }
 
-void anbox::core::SensorfwProximitySensor::disable_proximity_events()
+void waydroid::core::SensorfwProximitySensor::disable_proximity_events()
 {
     dbus_event_loop.enqueue(
         [this]
@@ -61,7 +61,7 @@ void anbox::core::SensorfwProximitySensor::disable_proximity_events()
         }).get();
 }
 
-void anbox::core::SensorfwProximitySensor::data_recived_impl()
+void waydroid::core::SensorfwProximitySensor::data_recived_impl()
 {
     QVector<ProximityData> values;
     if(!m_socket->read<ProximityData>(values))

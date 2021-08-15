@@ -1,6 +1,6 @@
 /*
  * Copyright © 2020 UBports foundation
- * Copyright © 2021 Anbox Project.
+ * Copyright © 2021 Waydroid Project.
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3,
@@ -27,14 +27,14 @@ namespace
 auto const null_handler = [](PoseData){};
 }
 
-anbox::core::SensorfwOrientationSensor::SensorfwOrientationSensor(
+waydroid::core::SensorfwOrientationSensor::SensorfwOrientationSensor(
     std::string const &dbus_bus_address)
     : Sensorfw(dbus_bus_address, "Orientation", PluginType::ORIENTATION),
       handler{null_handler}
 {
 }
 
-anbox::core::HandlerRegistration anbox::core::SensorfwOrientationSensor::register_orientation_handler(
+waydroid::core::HandlerRegistration waydroid::core::SensorfwOrientationSensor::register_orientation_handler(
     OrientationHandler const &handler)
 {
     return EventLoopHandlerRegistration{
@@ -43,7 +43,7 @@ anbox::core::HandlerRegistration anbox::core::SensorfwOrientationSensor::registe
         [this]{ this->handler = null_handler; }};
 }
 
-void anbox::core::SensorfwOrientationSensor::enable_orientation_events()
+void waydroid::core::SensorfwOrientationSensor::enable_orientation_events()
 {
     dbus_event_loop.enqueue(
         [this]
@@ -52,7 +52,7 @@ void anbox::core::SensorfwOrientationSensor::enable_orientation_events()
         }).get();
 }
 
-void anbox::core::SensorfwOrientationSensor::disable_orientation_events()
+void waydroid::core::SensorfwOrientationSensor::disable_orientation_events()
 {
     dbus_event_loop.enqueue(
         [this]
@@ -61,7 +61,7 @@ void anbox::core::SensorfwOrientationSensor::disable_orientation_events()
         }).get();
 }
 
-void anbox::core::SensorfwOrientationSensor::data_recived_impl()
+void waydroid::core::SensorfwOrientationSensor::data_recived_impl()
 {
     QVector<PoseData> values;
     if(!m_socket->read<PoseData>(values))

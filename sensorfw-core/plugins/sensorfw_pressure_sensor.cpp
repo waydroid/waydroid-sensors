@@ -1,6 +1,6 @@
 /*
  * Copyright © 2020 UBports foundation
- * Copyright © 2021 Anbox Project.
+ * Copyright © 2021 Waydroid Project.
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3,
@@ -27,14 +27,14 @@ namespace
 auto const null_handler = [](TimedUnsigned){};
 }
 
-anbox::core::SensorfwPressureSensor::SensorfwPressureSensor(
+waydroid::core::SensorfwPressureSensor::SensorfwPressureSensor(
     std::string const &dbus_bus_address)
     : Sensorfw(dbus_bus_address, "Pressure", PluginType::PRESSURE),
       handler{null_handler}
 {
 }
 
-anbox::core::HandlerRegistration anbox::core::SensorfwPressureSensor::register_pressure_handler(
+waydroid::core::HandlerRegistration waydroid::core::SensorfwPressureSensor::register_pressure_handler(
     PressureHandler const& handler)
 {
     return EventLoopHandlerRegistration{
@@ -43,7 +43,7 @@ anbox::core::HandlerRegistration anbox::core::SensorfwPressureSensor::register_p
         [this]{ this->handler = null_handler; }};
 }
 
-void anbox::core::SensorfwPressureSensor::enable_pressure_events()
+void waydroid::core::SensorfwPressureSensor::enable_pressure_events()
 {
     dbus_event_loop.enqueue(
         [this]
@@ -52,7 +52,7 @@ void anbox::core::SensorfwPressureSensor::enable_pressure_events()
         }).get();
 }
 
-void anbox::core::SensorfwPressureSensor::disable_pressure_events()
+void waydroid::core::SensorfwPressureSensor::disable_pressure_events()
 {
     dbus_event_loop.enqueue(
         [this]
@@ -61,7 +61,7 @@ void anbox::core::SensorfwPressureSensor::disable_pressure_events()
         }).get();
 }
 
-void anbox::core::SensorfwPressureSensor::data_recived_impl()
+void waydroid::core::SensorfwPressureSensor::data_recived_impl()
 {
     QVector<TimedUnsigned> values;
     if(!m_socket->read<TimedUnsigned>(values))

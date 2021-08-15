@@ -1,6 +1,6 @@
 /*
  * Copyright © 2020 UBports foundation
- * Copyright © 2021 Anbox Project.
+ * Copyright © 2021 Waydroid Project.
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3,
@@ -30,7 +30,7 @@ char const* const dbus_sensorfw_path = "/SensorManager";
 char const* const dbus_sensorfw_interface = "local.SensorManager";
 }
 
-anbox::core::Sensorfw::Sensorfw(
+waydroid::core::Sensorfw::Sensorfw(
     std::string const& dbus_bus_address,
     std::string const& name,
     PluginType const& plugin)
@@ -52,14 +52,14 @@ anbox::core::Sensorfw::Sensorfw(
     m_socket->initiateConnection(m_sessionid);
 }
 
-anbox::core::Sensorfw::~Sensorfw()
+waydroid::core::Sensorfw::~Sensorfw()
 {
     stop();
     release_sensor();
     m_socket->dropConnection();
 }
 
-const char* anbox::core::Sensorfw::plugin_string() const
+const char* waydroid::core::Sensorfw::plugin_string() const
 {
     switch (m_plugin) {
         case PluginType::ACCELEROMETER: return "accelerometersensor";
@@ -81,7 +81,7 @@ const char* anbox::core::Sensorfw::plugin_string() const
     return "";
 }
 
-const char* anbox::core::Sensorfw::plugin_interface() const
+const char* waydroid::core::Sensorfw::plugin_interface() const
 {
     switch (m_plugin) {
         case PluginType::ACCELEROMETER: return "local.AccelerometerSensor";
@@ -103,7 +103,7 @@ const char* anbox::core::Sensorfw::plugin_interface() const
     return "";
 }
 
-const char* anbox::core::Sensorfw::plugin_path() const
+const char* waydroid::core::Sensorfw::plugin_path() const
 {
     char *new_str;
     if (asprintf(&new_str,"%s/%s", dbus_sensorfw_path, plugin_string()) == -1)
@@ -112,7 +112,7 @@ const char* anbox::core::Sensorfw::plugin_path() const
     return new_str;
 }
 
-bool anbox::core::Sensorfw::load_plugin()
+bool waydroid::core::Sensorfw::load_plugin()
 {
     int constexpr timeout_default = 100;
     auto const result =  g_dbus_connection_call_sync(
@@ -141,7 +141,7 @@ bool anbox::core::Sensorfw::load_plugin()
     return the_result;
 }
 
-void anbox::core::Sensorfw::request_sensor()
+void waydroid::core::Sensorfw::request_sensor()
 {
     int constexpr timeout_default = 100;
     auto const result =  g_dbus_connection_call_sync(
@@ -172,7 +172,7 @@ void anbox::core::Sensorfw::request_sensor()
     GINFO("Got new plugin for %s with pid %i and session %i", plugin_string(), m_pid, m_sessionid);
 }
 
-bool anbox::core::Sensorfw::release_sensor()
+bool waydroid::core::Sensorfw::release_sensor()
 {
     int constexpr timeout_default = 100;
     auto const result =  g_dbus_connection_call_sync(
@@ -201,7 +201,7 @@ bool anbox::core::Sensorfw::release_sensor()
     return the_result;
 }
 
-void anbox::core::Sensorfw::start()
+void waydroid::core::Sensorfw::start()
 {
     if (m_running)
         return;
@@ -239,7 +239,7 @@ void anbox::core::Sensorfw::start()
     g_variant_unref(result);
 }
 
-void anbox::core::Sensorfw::stop()
+void waydroid::core::Sensorfw::stop()
 {
     if (!m_running)
         return;
@@ -271,7 +271,7 @@ void anbox::core::Sensorfw::stop()
     read_loop = std::thread();
 }
 
-void anbox::core::Sensorfw::set_interval(int interval) {
+void waydroid::core::Sensorfw::set_interval(int interval) {
     int constexpr timeout_default = 100;
     auto const result =  g_dbus_connection_call_sync(
             dbus_connection,

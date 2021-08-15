@@ -1,5 +1,5 @@
 /*
- * Copyright © 2021 Anbox Project.
+ * Copyright © 2021 Waydroid Project.
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3,
@@ -27,13 +27,13 @@
 #include "hybrisbindertypes.h"
 #include "SensorFW.h"
 
-using anbox::SensorFW;
+using waydroid::SensorFW;
 
-namespace anbox {
+namespace waydroid {
 namespace sensors {
 namespace implementation {
 
-constexpr char kAnboxVendor[] = "The Anbox Project";
+constexpr char kWaydroidVendor[] = "The Waydroid Project";
 
 typedef struct SensorDevice {
     SensorFW *mSensorFWDevice;
@@ -66,6 +66,6 @@ private:
 
 }  // namespace implementation
 }  // namespace sensors
-}  // namespace anbox
+}  // namespace waydroid
 
 #endif  // ANDBOX_HARDWARE_SENSORS_H_

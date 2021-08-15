@@ -1,6 +1,6 @@
 /*
  * Copyright © 2016 Canonical Ltd.
- * Copyright © 2021 Anbox Project.
+ * Copyright © 2021 Waydroid Project.
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3,
@@ -24,29 +24,29 @@ namespace
 auto const null_unregister = []{};
 }
 
-anbox::core::HandlerRegistration::HandlerRegistration()
+waydroid::core::HandlerRegistration::HandlerRegistration()
     : unregister{null_unregister}
 {
 }
 
-anbox::core::HandlerRegistration::HandlerRegistration(std::function<void()> const& unregister)
+waydroid::core::HandlerRegistration::HandlerRegistration(std::function<void()> const& unregister)
     : unregister{unregister}
 {
 }
 
-anbox::core::HandlerRegistration::~HandlerRegistration()
+waydroid::core::HandlerRegistration::~HandlerRegistration()
 {
     unregister();
 }
 
-anbox::core::HandlerRegistration::HandlerRegistration(HandlerRegistration&& other)
+waydroid::core::HandlerRegistration::HandlerRegistration(HandlerRegistration&& other)
     : unregister{std::move(other.unregister)}
 {
     other.unregister = null_unregister;
 }
 
-anbox::core::HandlerRegistration&
-anbox::core::HandlerRegistration::operator=(HandlerRegistration&& other)
+waydroid::core::HandlerRegistration&
+waydroid::core::HandlerRegistration::operator=(HandlerRegistration&& other)
 {
     if (&other != this)
     {

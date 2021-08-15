@@ -1,5 +1,5 @@
 /*
- * Copyright © 2021 Anbox Project.
+ * Copyright © 2021 Waydroid Project.
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3,
@@ -18,7 +18,7 @@
 
 #include "Sensors.h"
 
-using anbox::sensors::implementation::Sensors;
+using waydroid::sensors::implementation::Sensors;
 
 #define RET_OK          (0)
 #define RET_NOTFOUND    (1)
@@ -37,7 +37,7 @@ typedef struct app {
     Sensors *service;
 } App;
 
-static const char logtag[] = "anbox-sensors-daemon";
+static const char logtag[] = "waydroid-sensors-daemon";
 
 static
 gboolean
@@ -238,7 +238,7 @@ app_reply(
         if (!g_strcmp0(iface, DEFAULT_IFACE)) {
             int handle = 0;
             gbinder_reader_read_int32(&reader, &handle);
-    
+
             reply = gbinder_local_object_new_reply(obj);
 
             gbinder_local_reply_append_int32(reply, GBINDER_STATUS_OK);
@@ -366,7 +366,7 @@ app_run(
     gbinder_servicemanager_add_service(app->sm, DEFAULT_NAME, app->obj,
         app_add_service_done, app);
 
-    GINFO("Anbox Sensors HAL service ready.");
+    GINFO("Waydroid Sensors HAL service ready.");
 
     g_main_loop_run(app->loop);
 

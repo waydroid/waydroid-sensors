@@ -1,6 +1,6 @@
 /*
  * Copyright © 2020 UBports foundation
- * Copyright © 2021 Anbox Project.
+ * Copyright © 2021 Waydroid Project.
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3,
@@ -31,7 +31,7 @@
 #pragma once
 
 class SocketReader;
-namespace anbox {
+namespace waydroid {
 namespace core {
 class Sensorfw {
 public:

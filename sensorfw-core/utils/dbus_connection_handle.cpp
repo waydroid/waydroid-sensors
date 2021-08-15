@@ -1,6 +1,6 @@
 /*
  * Copyright © 2016 Canonical Ltd.
- * Copyright © 2021 Anbox Project.
+ * Copyright © 2021 Waydroid Project.
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3,
@@ -21,7 +21,7 @@
 
 #include <stdexcept>
 
-anbox::core::DBusConnectionHandle::DBusConnectionHandle(std::string const& address)
+waydroid::core::DBusConnectionHandle::DBusConnectionHandle(std::string const& address)
 {
     GError *error = NULL;
 
@@ -42,12 +42,12 @@ anbox::core::DBusConnectionHandle::DBusConnectionHandle(std::string const& addre
     }
 }
 
-anbox::core::DBusConnectionHandle::~DBusConnectionHandle()
+waydroid::core::DBusConnectionHandle::~DBusConnectionHandle()
 {
     g_dbus_connection_close_sync(connection, nullptr, nullptr);
 }
 
-void anbox::core::DBusConnectionHandle::request_name(char const* name) const
+void waydroid::core::DBusConnectionHandle::request_name(char const* name) const
 {
     static constexpr uint32_t DBUS_NAME_FLAG_DO_NOT_QUEUE = 0x4;
     static constexpr uint32_t DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER = 0x1;
@@ -89,7 +89,7 @@ void anbox::core::DBusConnectionHandle::request_name(char const* name) const
     }
 }
 
-anbox::core::DBusConnectionHandle::operator GDBusConnection*() const
+waydroid::core::DBusConnectionHandle::operator GDBusConnection*() const
 {
     return connection;
 }

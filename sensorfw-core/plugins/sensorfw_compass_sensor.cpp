@@ -1,6 +1,6 @@
 /*
  * Copyright © 2020 UBports foundation
- * Copyright © 2021 Anbox Project.
+ * Copyright © 2021 Waydroid Project.
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3,
@@ -27,14 +27,14 @@ namespace
 auto const null_handler = [](CompassData){};
 }
 
-anbox::core::SensorfwCompassSensor::SensorfwCompassSensor(
+waydroid::core::SensorfwCompassSensor::SensorfwCompassSensor(
     std::string const& dbus_bus_address)
     : Sensorfw(dbus_bus_address, "Compass", PluginType::COMPASS),
       handler{null_handler}
 {
 }
 
-anbox::core::HandlerRegistration anbox::core::SensorfwCompassSensor::register_compass_handler(
+waydroid::core::HandlerRegistration waydroid::core::SensorfwCompassSensor::register_compass_handler(
     CompassHandler const& handler)
 {
     return EventLoopHandlerRegistration{
@@ -43,7 +43,7 @@ anbox::core::HandlerRegistration anbox::core::SensorfwCompassSensor::register_co
         [this]{ this->handler = null_handler; }};
 }
 
-void anbox::core::SensorfwCompassSensor::enable_compass_events()
+void waydroid::core::SensorfwCompassSensor::enable_compass_events()
 {
     dbus_event_loop.enqueue(
         [this]
@@ -52,7 +52,7 @@ void anbox::core::SensorfwCompassSensor::enable_compass_events()
         }).get();
 }
 
-void anbox::core::SensorfwCompassSensor::disable_compass_events()
+void waydroid::core::SensorfwCompassSensor::disable_compass_events()
 {
     dbus_event_loop.enqueue(
         [this]
@@ -61,7 +61,7 @@ void anbox::core::SensorfwCompassSensor::disable_compass_events()
         }).get();
 }
 
-void anbox::core::SensorfwCompassSensor::data_recived_impl()
+void waydroid::core::SensorfwCompassSensor::data_recived_impl()
 {
     QVector<CompassData> values;
     if(!m_socket->read<CompassData>(values))

@@ -1,6 +1,6 @@
 /*
  * Copyright © 2016 Canonical Ltd.
- * Copyright © 2021 Anbox Project.
+ * Copyright © 2021 Waydroid Project.
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3,
@@ -84,7 +84,7 @@ struct GSourceFdContext
 
 }
 
-anbox::core::EventLoop::EventLoop(std::string const& name)
+waydroid::core::EventLoop::EventLoop(std::string const& name)
     : main_context{g_main_context_new()},
       main_loop{g_main_loop_new(main_context, FALSE)}
 {
@@ -100,12 +100,12 @@ anbox::core::EventLoop::EventLoop(std::string const& name)
     enqueue([]{}).wait();
 }
 
-anbox::core::EventLoop::~EventLoop()
+waydroid::core::EventLoop::~EventLoop()
 {
     stop();
 }
 
-void anbox::core::EventLoop::stop()
+void waydroid::core::EventLoop::stop()
 {
     if (main_loop)
         g_main_loop_quit(main_loop);
@@ -123,7 +123,7 @@ void anbox::core::EventLoop::stop()
     }
 }
 
-std::future<void> anbox::core::EventLoop::enqueue(std::function<void()> const& callback)
+std::future<void> waydroid::core::EventLoop::enqueue(std::function<void()> const& callback)
 {
     auto const gsource = g_idle_source_new();
     auto const ctx = new GSourceContext{callback};
@@ -141,7 +141,7 @@ std::future<void> anbox::core::EventLoop::enqueue(std::function<void()> const& c
     return future;
 }
 
-std::future<void> anbox::core::EventLoop::schedule_in(
+std::future<void> waydroid::core::EventLoop::schedule_in(
     std::chrono::milliseconds timeout,
     std::function<void()> const& callback)
 {
@@ -161,7 +161,7 @@ std::future<void> anbox::core::EventLoop::schedule_in(
     return future;
 }
 
-void anbox::core::EventLoop::schedule_with_cancellation_in(
+void waydroid::core::EventLoop::schedule_with_cancellation_in(
     std::chrono::milliseconds timeout,
     std::function<void()> const& callback,
     std::function<void(EventLoopCancellation const&)> const& cancellation_ready)
@@ -190,7 +190,7 @@ void anbox::core::EventLoop::schedule_with_cancellation_in(
     g_source_attach(gsource, main_context);
 }
 
-void anbox::core::EventLoop::watch_fd(
+void waydroid::core::EventLoop::watch_fd(
     int fd, std::function<void()> const& callback)
 {
     auto const gsource = g_unix_fd_source_new(fd, G_IO_IN);

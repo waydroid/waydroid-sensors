@@ -1,6 +1,6 @@
 /*
  * Copyright © 2016 Canonical Ltd.
- * Copyright © 2021 Anbox Project.
+ * Copyright © 2021 Waydroid Project.
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3,
@@ -22,7 +22,7 @@
 #include <utils/handler_registration.h>
 #include <utils/event_loop.h>
 
-namespace anbox
+namespace waydroid
 {
 namespace core
 {
@@ -31,7 +31,7 @@ class EventLoopHandlerRegistration : public HandlerRegistration
 {
 public:
     EventLoopHandlerRegistration(
-        anbox::core::EventLoop& loop,
+        waydroid::core::EventLoop& loop,
         std::function<void()> const& register_func,
         std::function<void()> const& unregister)
         : HandlerRegistration{[&, unregister] { loop.enqueue(unregister).wait(); }}
@@ -40,7 +40,7 @@ public:
     }
 
     EventLoopHandlerRegistration(
-        anbox::core::EventLoop& loop,
+        waydroid::core::EventLoop& loop,
         std::function<void()> const& unregister)
         : HandlerRegistration{[&, unregister] { loop.enqueue(unregister).wait(); }}
     {

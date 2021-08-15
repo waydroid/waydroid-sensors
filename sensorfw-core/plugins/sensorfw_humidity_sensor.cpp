@@ -1,6 +1,6 @@
 /*
  * Copyright © 2020 UBports foundation
- * Copyright © 2021 Anbox Project.
+ * Copyright © 2021 Waydroid Project.
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3,
@@ -27,14 +27,14 @@ namespace
 auto const null_handler = [](TimedUnsigned){};
 }
 
-anbox::core::SensorfwHumiditySensor::SensorfwHumiditySensor(
+waydroid::core::SensorfwHumiditySensor::SensorfwHumiditySensor(
     std::string const &dbus_bus_address)
     : Sensorfw(dbus_bus_address, "Humidity", PluginType::HUMIDITY),
       handler{null_handler}
 {
 }
 
-anbox::core::HandlerRegistration anbox::core::SensorfwHumiditySensor::register_humidity_handler(
+waydroid::core::HandlerRegistration waydroid::core::SensorfwHumiditySensor::register_humidity_handler(
     HumidityHandler const& handler)
 {
     return EventLoopHandlerRegistration{
@@ -43,7 +43,7 @@ anbox::core::HandlerRegistration anbox::core::SensorfwHumiditySensor::register_h
         [this]{ this->handler = null_handler; }};
 }
 
-void anbox::core::SensorfwHumiditySensor::enable_humidity_events()
+void waydroid::core::SensorfwHumiditySensor::enable_humidity_events()
 {
     dbus_event_loop.enqueue(
         [this]
@@ -52,7 +52,7 @@ void anbox::core::SensorfwHumiditySensor::enable_humidity_events()
         }).get();
 }
 
-void anbox::core::SensorfwHumiditySensor::disable_humidity_events()
+void waydroid::core::SensorfwHumiditySensor::disable_humidity_events()
 {
     dbus_event_loop.enqueue(
         [this]
@@ -61,7 +61,7 @@ void anbox::core::SensorfwHumiditySensor::disable_humidity_events()
         }).get();
 }
 
-void anbox::core::SensorfwHumiditySensor::data_recived_impl()
+void waydroid::core::SensorfwHumiditySensor::data_recived_impl()
 {
     QVector<TimedUnsigned> values;
     if(!m_socket->read<TimedUnsigned>(values))

@@ -51,7 +51,3 @@ target_include_directories(waydroid-sensord PUBLIC
 )
 
 install(TARGETS waydroid-sensord RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-
-install(FILES waydroid-sensors.conf 
-  DESTINATION ${CMAKE_INSTALL_FULL_SYSCONFDIR}/init
-)

@@ -22,7 +22,6 @@
 #include <gbinder.h>
 #include <gutil_log.h>
 #include <glib-unix.h>
-#include <mutex>
 
 #include "hybrisbindertypes.h"
 #include "SensorFW.h"
@@ -61,7 +60,6 @@ struct Sensors {
 private:
     static constexpr int32_t kPollMaxBufferSize = 128;
     SensorDevice *mSensorDevice;
-    std::mutex mPollLock;
 };
 
 }  // namespace implementation

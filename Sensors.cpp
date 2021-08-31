@@ -100,12 +100,6 @@ static int sensor_device_poll_event_locked(SensorDevice* dev)
     unsigned value;
     bool isNear;
 
-    /* Release the lock since we're going to block on recv() */
-    pthread_mutex_unlock(&dev->lock);
-
-    /* re-acquire the lock to modify the device state. */
-    pthread_mutex_lock(&dev->lock);
-
     // If the existing entry for this sensor is META_DATA,
     // do not overwrite it. We can resume saving sensor
     // values after that meta data has been received.
@@ -596,7 +590,6 @@ int Sensors::activate(
             mSensorDevice->mSensorFWDevice->EnableSensorEvents(handle);
         else
             mSensorDevice->mSensorFWDevice->DisableSensorEvents(handle);
-    } else {
         mSensorDevice->active_sensors = new_sensors;
     }
     pthread_mutex_unlock(&mSensorDevice->lock);
@@ -610,35 +603,21 @@ std::vector<sensors_event_t> Sensors::poll(int32_t maxCount, int *err_out) {
     int err = 0;
 
     { // scope of reentry lock
-
-        // This enforces a single client, meaning that a maximum of one client can call poll().
-        // If this function is re-entred, it means that we are stuck in a state that may prevent
-        // the system from proceeding normally.
-        //
-        // Exit and let the system restart the sensor-hal-implementation hidl service.
-        //
-        // This function must not call _hidl_cb(...) or return until there is no risk of blocking.
-        std::unique_lock<std::mutex> lock(mPollLock, std::try_to_lock);
-        if(!lock.owns_lock()){
-            // cannot get the lock, hidl service will go into deadlock if it is not restarted.
-            // This is guaranteed to not trigger in passthrough mode.
-            GERR("ISensors::poll() re-entry. I do not know what to do except killing myself.");
-            ::exit(-1);
-        }
-
         if (maxCount <= 0) {
             err = -EINVAL;
         } else {
             int bufferSize = maxCount <= kPollMaxBufferSize ? maxCount : kPollMaxBufferSize;
 
             pthread_mutex_lock(&mSensorDevice->lock);
-            if (!mSensorDevice->pendingSensors) {
-                /* Block until there are pending events. Note that this releases
-                 * the lock during the blocking call, then re-acquires it before
-                 * returning. */
-                err = sensor_device_poll_event_locked(mSensorDevice);
-                if (err < 0) {
-                    goto out;
+            if (mSensorDevice->active_sensors) {
+                while (!mSensorDevice->pendingSensors) {
+                    /* Block until there are pending events. Note that this releases
+                     * the lock during the blocking call, then re-acquires it before
+                     * returning. */
+                    err = sensor_device_poll_event_locked(mSensorDevice);
+                    if (err < 0) {
+                        goto out;
+                    }
                 }
             }
             out.resize(bufferSize);

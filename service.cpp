@@ -377,19 +377,25 @@ app_run(
     app->loop = NULL;
 }
 
-int main()
+int main(int argc, char* argv[])
 {
+    const char* device;
     App app;
 
     gutil_log_timestamp = FALSE;
     gutil_log_set_type(GLOG_TYPE_STDERR, logtag);
     gutil_log_default.level = GLOG_LEVEL_DEFAULT;
 
+    if (argc < 2)
+        device = DEFAULT_DEVICE;
+    else
+        device = argv[1];
+
     memset(&app, 0, sizeof(app));
     app.ret = RET_INVARG;
     app.service = new Sensors();
 
-    app.sm = gbinder_servicemanager_new(DEFAULT_DEVICE);
+    app.sm = gbinder_servicemanager_new(device);
     if (gbinder_servicemanager_wait(app.sm, -1)) {
         app.obj = gbinder_servicemanager_new_local_object
             (app.sm, DEFAULT_IFACE, app_reply, &app);

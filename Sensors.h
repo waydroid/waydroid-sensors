@@ -44,18 +44,18 @@ typedef struct SensorDevice {
     uint32_t active_sensors;
     int flush_count[MAX_NUM_SENSORS];
     pthread_mutex_t lock;
+    GMainLoop* loop;
+    bool waiting_for_data;
 } SensorDevice;
 
 struct Sensors {
     Sensors();
 
     std::vector<sensor_t> getSensorsList();
-
     int activate(int32_t handle, bool enabled);
-
     std::vector<sensors_event_t> poll(int32_t maxCount, int *err_out);
-
     int flush(int32_t handle);
+    void killLoops();
 
 private:
     static constexpr int32_t kPollMaxBufferSize = 128;

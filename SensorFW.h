@@ -125,9 +125,12 @@ typedef struct {
     TimedUnsigned temperature_event;
 } SensorData;
 
+typedef void (*sensor_event_cb_t)(void *userdata, int id);
+
 struct SensorFW {
     SensorFW();
 
+    void RegisterSensors(sensor_event_cb_t cb, void *userdata);
     bool IsSensorAvailable(int id);
     bool IsSensorEventEnable(int id);
     int EnableSensorEvents(int id);
@@ -148,8 +151,6 @@ struct SensorFW {
 private:
     SensorData *data;
     std::vector<waydroid::core::HandlerRegistration> mRegistrations;
-
-    void RegisterSensors();
 };
 
 }  // namespace waydroid

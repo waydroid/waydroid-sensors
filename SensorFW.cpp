@@ -108,79 +108,87 @@ SensorFW::SensorFW()
         GINFO("Failed to create SensorfwTemperatureSensor: %s", e.what());
         data->sensorAvailable[ID_TEMPERATURE] = FALSE;
     }
-
-    RegisterSensors();
 }
 
-void SensorFW::RegisterSensors() {
+void SensorFW::RegisterSensors(sensor_event_cb_t cb, void *userdata) {
     if (data->sensorAvailable[ID_ACCELEROMETER]) {
         mRegistrations.push_back(
             data->accelerometer_sensor->register_accelerometer_handler(
-                [this](AccelerationData value) {
+                [this, cb, userdata](AccelerationData value) {
                     this->data->accelerometer_event = value;
+                    cb(userdata, ID_ACCELEROMETER);
                 }));
     }
     if (data->sensorAvailable[ID_GYROSCOPE]) {
         mRegistrations.push_back(
             data->gyroscope_sensor->register_gyroscope_handler(
-                [this](TimedXyzData value) {
+                [this, cb, userdata](TimedXyzData value) {
                     this->data->gyroscope_event = value;
+                    cb(userdata, ID_GYROSCOPE);
                 }));
     }
     if (data->sensorAvailable[ID_HUMIDITY]) {
         mRegistrations.push_back(
             data->humidity_sensor->register_humidity_handler(
-                [this](TimedUnsigned value) {
+                [this, cb, userdata](TimedUnsigned value) {
                     this->data->humidity_event = value;
+                    cb(userdata, ID_HUMIDITY);
                 }));
     }
     if (data->sensorAvailable[ID_LIGHT]) {
         mRegistrations.push_back(
             data->light_sensor->register_light_handler(
-                [this](TimedUnsigned value) {
+                [this, cb, userdata](TimedUnsigned value) {
                     this->data->light_event = value;
+                    cb(userdata, ID_LIGHT);
                 }));
     }
     if (data->sensorAvailable[ID_MAGNETIC_FIELD]) {
         mRegistrations.push_back(
             data->magnetometer_sensor->register_magnetometer_handler(
-                [this](CalibratedMagneticFieldData value) {
+                [this, cb, userdata](CalibratedMagneticFieldData value) {
                     this->data->magnetometer_event = value;
+                    cb(userdata, ID_MAGNETIC_FIELD);
                 }));
     }
     if (data->sensorAvailable[ID_DEVICE_ORIENTATION]) {
         mRegistrations.push_back(
             data->orientation_sensor->register_orientation_handler(
-                [this](PoseData value) {
+                [this, cb, userdata](PoseData value) {
                     this->data->orientation_event = value;
+                    cb(userdata, ID_DEVICE_ORIENTATION);
                 }));
     }
     if (data->sensorAvailable[ID_PRESSURE]) {
         mRegistrations.push_back(
             data->pressure_sensor->register_pressure_handler(
-                [this](TimedUnsigned value) {
+                [this, cb, userdata](TimedUnsigned value) {
                     this->data->pressure_event = value;
+                    cb(userdata, ID_PRESSURE);
                 }));
     }
     if (data->sensorAvailable[ID_PROXIMITY]) {
         mRegistrations.push_back(
             data->proximity_sensor->register_proximity_handler(
-                [this](ProximityData value) {
+                [this, cb, userdata](ProximityData value) {
                     this->data->proximity_event = value;
+                    cb(userdata, ID_PROXIMITY);
                 }));
     }
     if (data->sensorAvailable[ID_STEPCOUNTER]) {
         mRegistrations.push_back(
             data->stepcounter_sensor->register_stepcounter_handler(
-                [this](TimedUnsigned value) {
+                [this, cb, userdata](TimedUnsigned value) {
                     this->data->stepcounter_event = value;
+                    cb(userdata, ID_STEPCOUNTER);
                 }));
     }
     if (data->sensorAvailable[ID_TEMPERATURE]) {
         mRegistrations.push_back(
             data->temperature_sensor->register_temperature_handler(
-                [this](TimedUnsigned value) {
+                [this, cb, userdata](TimedUnsigned value) {
                     this->data->temperature_event = value;
+                    cb(userdata, ID_TEMPERATURE);
                 }));
     }
 }

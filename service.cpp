@@ -37,6 +37,13 @@ typedef struct app {
     Sensors *service;
 } App;
 
+typedef struct response {
+    GBinderRemoteRequest* req;
+    GBinderLocalReply* reply;
+    int maxCount;
+    Sensors *service;
+} Response;
+
 static const char logtag[] = "waydroid-sensors-daemon";
 
 static
@@ -47,6 +54,7 @@ app_signal(
     App* app = (App*) user_data;
 
     GINFO("Caught signal, shutting down...");
+    app->service->killLoops();
     g_main_loop_quit(app->loop);
     return G_SOURCE_CONTINUE;
 }
@@ -89,6 +97,44 @@ sensors_write_info_strings(
     sensors_write_hidl_string_data(w, sensor, vendor, idx, off);
     sensors_write_hidl_string_data(w, sensor, typeAsString, idx, off);
     sensors_write_hidl_string_data(w, sensor, requiredPermission, idx, off);
+}
+
+static
+gboolean
+app_async_resp(
+    gpointer user_data)
+{
+    Response* resp = (Response*)user_data;
+    int err = 0;
+    GBinderWriter writer;
+
+    std::vector<sensors_event_t> event_vec = resp->service->poll(resp->maxCount, &err);
+    sensors_event_t *event = &event_vec[0];
+    int event_len = event_vec.size();
+
+    gbinder_local_reply_init_writer(resp->reply, &writer);
+    gbinder_writer_append_int32(&writer, err);
+    gbinder_writer_append_hidl_vec(&writer, (void *)event, event_len, sizeof(sensors_event_t));
+
+    std::vector<sensor_t> sensors_vec;
+    sensor_t *sensors = &sensors_vec[0];
+    int sensors_len = sensors_vec.size();
+    gbinder_writer_append_hidl_vec(&writer, (void *)sensors, sensors_len, sizeof(sensor_t));
+
+    gbinder_remote_request_complete(resp->req, resp->reply, 0);
+    return G_SOURCE_REMOVE;
+}
+
+static
+void
+app_async_free(
+    gpointer user_data)
+{
+    Response* resp = (Response*)user_data;
+
+    gbinder_local_reply_unref(resp->reply);
+    gbinder_remote_request_unref(resp->req);
+    g_free(resp);
 }
 
 static
@@ -189,7 +235,6 @@ app_reply(
 
         if (!g_strcmp0(iface, DEFAULT_IFACE)) {
             int maxCount = 0;
-            int err = 0;
             gbinder_reader_read_int32(&reader, &maxCount);
 
             reply = gbinder_local_object_new_reply(obj);
@@ -197,18 +242,15 @@ app_reply(
             gbinder_local_reply_append_int32(reply, GBINDER_STATUS_OK);
             *status = GBINDER_STATUS_OK;
 
-            std::vector<sensors_event_t> event_vec = app->service->poll(maxCount, &err);
-            sensors_event_t *event = &event_vec[0];
-            int event_len = event_vec.size();
-
-            gbinder_local_reply_init_writer(reply, &writer);
-            gbinder_writer_append_int32(&writer, err);
-            gbinder_writer_append_hidl_vec(&writer, (void *)event, event_len, sizeof(sensors_event_t));
-
-            std::vector<sensor_t> sensors_vec;
-            sensor_t *sensors = &sensors_vec[0];
-            int sensors_len = sensors_vec.size();
-            gbinder_writer_append_hidl_vec(&writer, (void *)sensors, sensors_len, sizeof(sensor_t));
+            Response* resp = g_new0(Response, 1);
+            resp->service = app->service;
+            resp->maxCount = maxCount;
+            resp->reply = reply;
+            resp->req = gbinder_remote_request_ref(req);
+            g_idle_add_full(G_PRIORITY_DEFAULT_IDLE, app_async_resp,
+                                resp, app_async_free);
+            gbinder_remote_request_block(resp->req);
+            return NULL;
         } else {
             GDEBUG("Unexpected interface \"%s\"", iface);
         }
@@ -347,6 +389,7 @@ app_sm_presence_handler(
             app_add_service_done, app);
     } else {
         GINFO("Service manager has died");
+        app->service->killLoops();
     }
 }
 

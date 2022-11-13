@@ -12,7 +12,7 @@ pkg_check_modules(GIO REQUIRED gio-2.0)
 pkg_check_modules(GIO_UNIX REQUIRED gio-unix-2.0)
 pkg_check_modules(GLIB REQUIRED glib-2.0)
 pkg_check_modules(GLIB_UTIL REQUIRED libglibutil)
-pkg_check_modules(GBINDER REQUIRED libgbinder)
+pkg_check_modules(GBINDER REQUIRED libgbinder>=1.1.20)
 
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Network REQUIRED)

@@ -438,7 +438,7 @@ int main(int argc, char* argv[])
     app.ret = RET_INVARG;
     app.service = new Sensors();
 
-    app.sm = gbinder_servicemanager_new(device);
+    app.sm = gbinder_servicemanager_new2(device, "hidl", "hidl");
     if (gbinder_servicemanager_wait(app.sm, -1)) {
         app.obj = gbinder_servicemanager_new_local_object
             (app.sm, DEFAULT_IFACE, app_reply, &app);

@@ -145,27 +145,29 @@ bool SocketReader::readSocketTag()
 bool SocketReader::read(void* buffer, int size)
 {
     int bytesRead = 0;
-    int retry = 100;
+
     while(bytesRead < size)
     {
+        g_autoptr(GError) err = NULL;
+
         int bytes = g_input_stream_read(
             istream_,
             (char *)buffer + bytesRead,
             size - bytesRead,
             /* cancellable */ NULL,
-            /* (out) err */ NULL);
+            /* (out) err */ &err);
+
+        if (err) {
+            g_warning("Failed to read from socket: %s. Unexpected things might occur.", err->message);
+            return false;
+        }
 
         if(bytes == 0)
         {
-            if(!retry)
-                return false;
-            struct timespec ts;
-            ts.tv_sec = 0;
-            ts.tv_nsec = 100000000;
-            nanosleep( &ts, NULL );
-            --retry;
-            continue;
+            // This is EOF. No further reading possible.
+            break;
         }
+
         if(bytes < 1)
             return false;
         bytesRead += bytes;
@@ -184,10 +186,22 @@ bool SocketReader::isConnected()
 void SocketReader::skipAll()
 {
     while (g_pollable_input_stream_is_readable(G_POLLABLE_INPUT_STREAM(istream_))) {
-        g_input_stream_skip(
+        g_autoptr(GError) err = NULL;
+
+        auto ret = g_input_stream_skip(
             istream_,
             /* count */ G_MAXSSIZE,
             /* cancellable */ NULL,
-            /* (out) error */ NULL);
+            /* (out) error */ &err);
+
+        if (err) {
+            g_warning("Cannot skip the stream: %s. Unexpected things might occur.", err->message);
+            break;
+        }
+
+        if (ret == 0) {
+            // This is EOF.
+            break;
+        }
     }
 }

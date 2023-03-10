@@ -180,7 +180,7 @@ bool SocketReader::isConnected()
     return (
         socket_ &&
         g_socket_connection_is_connected(socket_) && 
-        g_io_stream_is_closed(G_IO_STREAM(socket_)));
+        !g_io_stream_is_closed(G_IO_STREAM(socket_)));
 }
 
 void SocketReader::skipAll()

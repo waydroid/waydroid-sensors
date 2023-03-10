@@ -63,7 +63,7 @@ void waydroid::core::SensorfwLightSensor::disable_light_events()
 
 void waydroid::core::SensorfwLightSensor::data_recived_impl()
 {
-    QVector<TimedUnsigned> values;
+    std::vector<TimedUnsigned> values;
     if(!m_socket->read<TimedUnsigned>(values))
         return;
 

@@ -63,7 +63,7 @@ void waydroid::core::SensorfwRotationSensor::disable_rotation_events()
 
 void waydroid::core::SensorfwRotationSensor::data_recived_impl()
 {
-    QVector<TimedXyzData> values;
+    std::vector<TimedXyzData> values;
     if(!m_socket->read<TimedXyzData>(values))
         return;
 

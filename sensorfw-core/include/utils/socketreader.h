@@ -3,6 +3,7 @@
    @brief SocketReader helper class for sensor interface
 
    <p>
+   Copyright 2022 UBports Foundation.
    Copyright (C) 2009-2010 Nokia Corporation
 
    @author Timo Rongas <ext-timo.2.rongas@nokia.com>
@@ -26,9 +27,10 @@
 
 #pragma once
 
-#include <QObject>
-#include <QLocalSocket>
-#include <QVector>
+#include <vector>
+
+#include <glib.h>
+#include <gio/gio.h>
 
 /**
  * @brief Helper class for reading socket datachannel from sensord
@@ -37,19 +39,14 @@
  * data channel. It is used by AbstractSensorChannelInterface to maintain
  * the socket connection to the server.
  */
-class SocketReader : public QObject
+class SocketReader
 {
-    Q_OBJECT
-    Q_DISABLE_COPY(SocketReader)
-
 public:
 
     /**
      * Constructor.
-     *
-     * @param parent Parent QObject.
      */
-    SocketReader(QObject* parent = 0);
+    SocketReader();
 
     /**
      * Destructor.
@@ -71,18 +68,15 @@ public:
     bool dropConnection();
 
     /**
-     * Provides access to the internal QLocalSocket for direct reading.
+     * Provides access to the internal GSocketConnection for direct reading.
      *
-     * @return Pointer to the internal QLocalSocket. Pointer can be \c NULL
+     * @return Pointer to the internal GSocketConnection. Pointer can be \c NULL
      *         if \c initiateConnection() has not been called successfully.
      */
-    QLocalSocket* socket();
+    GSocketConnection* socket();
 
     /**
-     * Attempt to read given number of bytes from the socket. As
-     * QLocalSocket is used, we are guaranteed that any number of bytes
-     * written in single operation are available for immediate reading
-     * with a single operation.
+     * Attempt to read given number of bytes from the socket.
      *
      * @param size Number of bytes to read.
      * @param buffer Location for storing the data.
@@ -99,7 +93,7 @@ public:
      * @return true if atleast one object was read.
      */
     template<typename T>
-    bool read(QVector<T>& values);
+    bool read(std::vector<T>& values);
 
     /**
      * Returns whether the socket is currently connected.
@@ -120,12 +114,19 @@ private:
      */
     bool readSocketTag();
 
-    QLocalSocket* socket_; /**< socket data connection to sensord */
+    /**
+     * Skip any readable content on the socket.
+     */
+    void skipAll();
+
+    GSocketConnection* socket_; /**< socket data connection to sensord */
+    GInputStream* istream_; /**< input of socket. owned by socket. */
+    GOutputStream* ostream_; /**< output of socket. owned by socket. */
     bool tagRead_; /**< is initial magic byte read from the socket */
 };
 
 template<typename T>
-bool SocketReader::read(QVector<T>& values)
+bool SocketReader::read(std::vector<T>& values)
 {
     if (!socket_) {
         return false;
@@ -134,20 +135,20 @@ bool SocketReader::read(QVector<T>& values)
     unsigned int count;
     if(!read((void*)&count, sizeof(unsigned int)))
     {
-        socket_->readAll();
+        skipAll();
         return false;
     }
     if(count > 1000)
     {
-        qWarning() << "Too many samples waiting in socket. Flushing it to empty";
-        socket_->readAll();
+        g_warning("Too many samples waiting in socket. Flushing it to empty");
+        skipAll();
         return false;
     }
     values.resize(values.size() + count);
     if(!read((void*)values.data(), sizeof(T) * count))
     {
-        qWarning() << "Error occured while reading data from socket: " << socket_->errorString();
-        socket_->readAll();
+        g_warning("Error occured while reading data from socket");
+        skipAll();
         return false;
     }
     return true;

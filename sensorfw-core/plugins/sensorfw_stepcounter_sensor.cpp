@@ -63,7 +63,7 @@ void waydroid::core::SensorfwStepcounterSensor::disable_stepcounter_events()
 
 void waydroid::core::SensorfwStepcounterSensor::data_recived_impl()
 {
-    QVector<TimedUnsigned> values;
+    std::vector<TimedUnsigned> values;
     if(!m_socket->read<TimedUnsigned>(values))
         return;
 

@@ -63,7 +63,7 @@ void waydroid::core::SensorfwProximitySensor::disable_proximity_events()
 
 void waydroid::core::SensorfwProximitySensor::data_recived_impl()
 {
-    QVector<ProximityData> values;
+    std::vector<ProximityData> values;
     if(!m_socket->read<ProximityData>(values))
         return;
 

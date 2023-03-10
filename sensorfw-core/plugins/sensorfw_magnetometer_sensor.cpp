@@ -63,7 +63,7 @@ void waydroid::core::SensorfwMagnetometerSensor::disable_magnetometer_events()
 
 void waydroid::core::SensorfwMagnetometerSensor::data_recived_impl()
 {
-    QVector<CalibratedMagneticFieldData> values;
+    std::vector<CalibratedMagneticFieldData> values;
     if(!m_socket->read<CalibratedMagneticFieldData>(values))
         return;
 

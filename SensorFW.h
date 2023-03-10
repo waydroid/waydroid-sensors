@@ -136,17 +136,17 @@ struct SensorFW {
     int EnableSensorEvents(int id);
     int DisableSensorEvents(int id);
 
-    int GetAccelerometerEvent(quint64 *ts, int *x, int *y, int *z);
-    int GetGyroscopeEvent(quint64 *ts, int *x, int *y, int *z);
-    int GetHumidityEvent(quint64 *ts, unsigned *value);
-    int GetLightEvent(quint64 *ts, unsigned *value);
-    int GetMagnetometerEvent(quint64 *ts, int *x, int *y, int *z,
+    int GetAccelerometerEvent(uint64_t *ts, int *x, int *y, int *z);
+    int GetGyroscopeEvent(uint64_t *ts, int *x, int *y, int *z);
+    int GetHumidityEvent(uint64_t *ts, unsigned *value);
+    int GetLightEvent(uint64_t *ts, unsigned *value);
+    int GetMagnetometerEvent(uint64_t *ts, int *x, int *y, int *z,
         int *rx, int *ry, int *rz, int* level);
-    int GetOrientationEvent(quint64 *ts, int *degree);
-    int GetPressureEvent(quint64 *ts, unsigned *value);
-    int GetProximityEvent(quint64 *ts, unsigned *value, bool *isNear);
-    int GetStepcounterEvent(quint64 *ts, unsigned *value);
-    int GetTemperatureEvent(quint64 *ts, unsigned *value);
+    int GetOrientationEvent(uint64_t *ts, int *degree);
+    int GetPressureEvent(uint64_t *ts, unsigned *value);
+    int GetProximityEvent(uint64_t *ts, unsigned *value, bool *isNear);
+    int GetStepcounterEvent(uint64_t *ts, unsigned *value);
+    int GetTemperatureEvent(uint64_t *ts, unsigned *value);
 
 private:
     SensorData *data;

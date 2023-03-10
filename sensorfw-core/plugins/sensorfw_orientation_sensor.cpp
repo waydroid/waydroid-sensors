@@ -63,7 +63,7 @@ void waydroid::core::SensorfwOrientationSensor::disable_orientation_events()
 
 void waydroid::core::SensorfwOrientationSensor::data_recived_impl()
 {
-    QVector<PoseData> values;
+    std::vector<PoseData> values;
     if(!m_socket->read<PoseData>(values))
         return;
 

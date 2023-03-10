@@ -63,7 +63,7 @@ void waydroid::core::SensorfwCompassSensor::disable_compass_events()
 
 void waydroid::core::SensorfwCompassSensor::data_recived_impl()
 {
-    QVector<CompassData> values;
+    std::vector<CompassData> values;
     if(!m_socket->read<CompassData>(values))
         return;
 

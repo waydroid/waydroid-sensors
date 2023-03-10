@@ -63,7 +63,7 @@ void waydroid::core::SensorfwTapSensor::disable_tap_events()
 
 void waydroid::core::SensorfwTapSensor::data_recived_impl()
 {
-    QVector<TapData> values;
+    std::vector<TapData> values;
     if(!m_socket->read<TapData>(values))
         return;
 

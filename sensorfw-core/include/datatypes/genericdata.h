@@ -27,7 +27,7 @@
 #ifndef GENERICDATA_H
 #define GENERICDATA_H
 
-#include <QMetaType>
+#include <cstdint>
 
 /**
  * A base class for measurement data that contain timestamp.
@@ -41,9 +41,9 @@ public:
      *
      * @param timestamp monotonic time (microsec)
      */
-    TimedData(const quint64& timestamp) : timestamp_(timestamp) {}
+    TimedData(const uint64_t& timestamp) : timestamp_(timestamp) {}
 
-    quint64 timestamp_;  /**< monotonic time (microsec) */
+    uint64_t timestamp_;  /**< monotonic time (microsec) */
 };
 
 /**
@@ -65,12 +65,11 @@ public:
      * @param y Y coordinate.
      * @param z Z coordinate.
      */
-    TimedXyzData(const quint64& timestamp, int x, int y, int z) : TimedData(timestamp), x_(x), y_(y), z_(z) {}
+    TimedXyzData(const uint64_t& timestamp, int x, int y, int z) : TimedData(timestamp), x_(x), y_(y), z_(z) {}
 
     int x_; /**< X value */
     int y_; /**< Y value */
     int z_; /**< Z value */
 };
-Q_DECLARE_METATYPE ( TimedXyzData )
 
 #endif // GENERICDATA_H

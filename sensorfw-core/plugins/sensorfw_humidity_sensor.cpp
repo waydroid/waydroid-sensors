@@ -63,7 +63,7 @@ void waydroid::core::SensorfwHumiditySensor::disable_humidity_events()
 
 void waydroid::core::SensorfwHumiditySensor::data_recived_impl()
 {
-    QVector<TimedUnsigned> values;
+    std::vector<TimedUnsigned> values;
     if(!m_socket->read<TimedUnsigned>(values))
         return;
 

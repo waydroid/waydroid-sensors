@@ -78,7 +78,7 @@ public:
      * @param rz raw Z coordinate value.
      * @param level Calibration level.
      */
-    CalibratedMagneticFieldData(const quint64& timestamp, int x, int y, int z, int rx, int ry, int rz, int level) :
+    CalibratedMagneticFieldData(const uint64_t& timestamp, int x, int y, int z, int rx, int ry, int rz, int level) :
         TimedData(timestamp),
         x_(x), y_(y), z_(z),
         rx_(rx), ry_(ry), rz_(rz),
@@ -123,7 +123,7 @@ public:
      * @param degrees Angle to north.
      * @param level Magnetometer calibration level.
      */
-    CompassData(const quint64& timestamp, int degrees, int level) :
+    CompassData(const uint64_t& timestamp, int degrees, int level) :
         TimedData(timestamp), degrees_(degrees), rawDegrees_(degrees), correctedDegrees_(0), level_(level) {}
 
     /**
@@ -135,7 +135,7 @@ public:
      * @param correctedDegrees Declination corrected angle to north.
      * @param rawDegrees Not declination corrected angle to north.
      */
-    CompassData(const quint64& timestamp, int degrees, int level, int correctedDegrees, int rawDegrees) :
+    CompassData(const uint64_t& timestamp, int degrees, int level, int correctedDegrees, int rawDegrees) :
         TimedData(timestamp), degrees_(degrees), rawDegrees_(rawDegrees), correctedDegrees_(correctedDegrees), level_(level) {}
 
     int degrees_; /**< Angle to north which may be declination corrected or not. This is the value apps should use */
@@ -162,7 +162,7 @@ public:
      * @param value raw proximity value.
      * @param withinProximity is there an object within proximity.
      */
-    ProximityData(const quint64& timestamp, unsigned int value, bool withinProximity) :
+    ProximityData(const uint64_t& timestamp, unsigned int value, bool withinProximity) :
         TimedUnsigned(timestamp, value), withinProximity_(withinProximity) {}
 
     bool withinProximity_; /**< is an object within proximity or not */

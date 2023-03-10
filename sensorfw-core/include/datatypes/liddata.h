@@ -59,9 +59,8 @@ public:
      * @param type Type of lid.
      * @param value Initial value to use
      */
-    LidData(const quint64& timestamp, Type type, unsigned value) :
+    LidData(const uint64_t& timestamp, Type type, unsigned value) :
         TimedData(timestamp), type_(type), value_(value) {}
 };
 
-Q_DECLARE_METATYPE(LidData)
 #endif // LidData_H

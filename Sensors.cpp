@@ -95,7 +95,7 @@ static void sensor_event_cb(void *userdata, int id)
     sensors_event_t* events = dev->sensors;
 
     int64_t event_time = -1;
-    quint64 ts;
+    uint64_t ts;
     int x, y, z, rx, ry, rz, tmp;
     unsigned value;
     bool isNear;

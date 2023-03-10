@@ -63,7 +63,7 @@ void waydroid::core::SensorfwTemperatureSensor::disable_temperature_events()
 
 void waydroid::core::SensorfwTemperatureSensor::data_recived_impl()
 {
-    QVector<TimedUnsigned> values;
+    std::vector<TimedUnsigned> values;
     if(!m_socket->read<TimedUnsigned>(values))
         return;
 

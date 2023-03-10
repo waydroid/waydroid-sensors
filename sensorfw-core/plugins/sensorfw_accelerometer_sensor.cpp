@@ -63,7 +63,7 @@ void waydroid::core::SensorfwAccelerometerSensor::disable_accelerometer_events()
 
 void waydroid::core::SensorfwAccelerometerSensor::data_recived_impl()
 {
-    QVector<AccelerationData> values;
+    std::vector<AccelerationData> values;
     if(!m_socket->read<AccelerationData>(values))
         return;
 

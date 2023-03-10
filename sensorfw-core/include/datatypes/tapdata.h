@@ -75,7 +75,7 @@ public:
      * @param direction Direction of tap.
      * @param type Type of tap.
      */
-    TapData(const quint64& timestamp, Direction direction, Type type) :
+    TapData(const uint64_t& timestamp, Direction direction, Type type) :
         TimedData(timestamp), direction_(direction), type_(type) {}
 };
 

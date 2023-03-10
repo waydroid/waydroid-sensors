@@ -79,11 +79,12 @@ private:
     const char* plugin_interface() const;
     const char* plugin_path() const;
 
-    std::thread read_loop;
+    static gboolean static_data_recieved(GSocket * socket, GIOCondition cond, gpointer user_data);
+
     PluginType m_plugin;
     pid_t m_pid;
     int m_sessionid;
-    bool m_running = false;
+    std::unique_ptr<GSource, decltype(&g_source_unref)> m_gsource;
 };
 }
 }

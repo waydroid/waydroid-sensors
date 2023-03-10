@@ -63,7 +63,7 @@ void waydroid::core::SensorfwPressureSensor::disable_pressure_events()
 
 void waydroid::core::SensorfwPressureSensor::data_recived_impl()
 {
-    QVector<TimedUnsigned> values;
+    std::vector<TimedUnsigned> values;
     if(!m_socket->read<TimedUnsigned>(values))
         return;
 

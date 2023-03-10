@@ -44,11 +44,10 @@ public:
      * @param timestamp timestamp as monotonic time (microsec).
      * @param value value of the measurement.
      */
-    TimedUnsigned(const quint64& timestamp, unsigned value) : TimedData(timestamp), value_(value) {}
+    TimedUnsigned(const uint64_t& timestamp, unsigned value) : TimedData(timestamp), value_(value) {}
 
     unsigned value_; /**< Measurement value. */
 };
 
-Q_DECLARE_METATYPE ( TimedUnsigned )
 
 #endif // TIMED_UNSIGNED_H

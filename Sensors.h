@@ -36,7 +36,7 @@ constexpr char kWaydroidVendor[] = "The Waydroid Project";
 
 typedef struct SensorDevice {
     SensorFW *mSensorFWDevice;
-    quint64 last_TimeStamp[MAX_NUM_SENSORS];
+    uint64_t last_TimeStamp[MAX_NUM_SENSORS];
     sensors_event_t sensors[MAX_NUM_SENSORS];
     uint32_t pendingSensors;
     int64_t timeStart;

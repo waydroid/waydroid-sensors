@@ -99,9 +99,8 @@ public:
      * @param timestamp Initial value for timestamp.
      * @param orientation Initial value for orientation.
      */
-    PoseData(const quint64& timestamp, Orientation orientation) : TimedData(timestamp), orientation_(orientation) {}
+    PoseData(const uint64_t& timestamp, Orientation orientation) : TimedData(timestamp), orientation_(orientation) {}
 };
 
-Q_DECLARE_METATYPE(PoseData)
 
 #endif // POSEDATA_H

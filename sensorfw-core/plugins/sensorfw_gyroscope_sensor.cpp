@@ -63,7 +63,7 @@ void waydroid::core::SensorfwGyroscopeSensor::disable_gyroscope_events()
 
 void waydroid::core::SensorfwGyroscopeSensor::data_recived_impl()
 {
-    QVector<TimedXyzData> values;
+    std::vector<TimedXyzData> values;
     if(!m_socket->read<TimedXyzData>(values))
         return;
 

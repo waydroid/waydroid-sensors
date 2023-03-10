@@ -301,7 +301,7 @@ int SensorFW::DisableSensorEvents(int id) {
     return 0;
 }
 
-int SensorFW::GetAccelerometerEvent(quint64 *ts, int *x, int *y, int *z) {
+int SensorFW::GetAccelerometerEvent(uint64_t *ts, int *x, int *y, int *z) {
     if (!IsSensorEventEnable(ID_ACCELEROMETER))
         return -EPERM;
 
@@ -313,7 +313,7 @@ int SensorFW::GetAccelerometerEvent(quint64 *ts, int *x, int *y, int *z) {
     return 0;
 }
 
-int SensorFW::GetGyroscopeEvent(quint64 *ts, int *x, int *y, int *z) {
+int SensorFW::GetGyroscopeEvent(uint64_t *ts, int *x, int *y, int *z) {
     if (!IsSensorEventEnable(ID_GYROSCOPE))
         return -EPERM;
 
@@ -325,7 +325,7 @@ int SensorFW::GetGyroscopeEvent(quint64 *ts, int *x, int *y, int *z) {
     return 0;
 }
 
-int SensorFW::GetHumidityEvent(quint64 *ts, unsigned *value) {
+int SensorFW::GetHumidityEvent(uint64_t *ts, unsigned *value) {
     if (!IsSensorEventEnable(ID_HUMIDITY))
         return -EPERM;
 
@@ -335,7 +335,7 @@ int SensorFW::GetHumidityEvent(quint64 *ts, unsigned *value) {
     return 0;
 }
 
-int SensorFW::GetLightEvent(quint64 *ts, unsigned *value) {
+int SensorFW::GetLightEvent(uint64_t *ts, unsigned *value) {
     if (!IsSensorEventEnable(ID_LIGHT))
         return -EPERM;
 
@@ -345,7 +345,7 @@ int SensorFW::GetLightEvent(quint64 *ts, unsigned *value) {
     return 0;
 }
 
-int SensorFW::GetMagnetometerEvent(quint64 *ts, int *x, int *y, int *z,
+int SensorFW::GetMagnetometerEvent(uint64_t *ts, int *x, int *y, int *z,
         int *rx, int *ry, int *rz, int *level) {
     if (!IsSensorEventEnable(ID_MAGNETIC_FIELD) &&
         !IsSensorEventEnable(ID_MAGNETIC_FIELD_UNCALIBRATED))
@@ -363,7 +363,7 @@ int SensorFW::GetMagnetometerEvent(quint64 *ts, int *x, int *y, int *z,
     return 0;
 }
 
-int SensorFW::GetOrientationEvent(quint64 *ts, int *degree) {
+int SensorFW::GetOrientationEvent(uint64_t *ts, int *degree) {
     if (!IsSensorEventEnable(ID_DEVICE_ORIENTATION))
         return -EPERM;
 
@@ -387,7 +387,7 @@ int SensorFW::GetOrientationEvent(quint64 *ts, int *degree) {
     return 0;
 }
 
-int SensorFW::GetPressureEvent(quint64 *ts, unsigned *value) {
+int SensorFW::GetPressureEvent(uint64_t *ts, unsigned *value) {
     if (!IsSensorEventEnable(ID_PRESSURE))
         return -EPERM;
 
@@ -397,7 +397,7 @@ int SensorFW::GetPressureEvent(quint64 *ts, unsigned *value) {
     return 0;
 }
 
-int SensorFW::GetProximityEvent(quint64 *ts, unsigned *value, bool *isNear) {
+int SensorFW::GetProximityEvent(uint64_t *ts, unsigned *value, bool *isNear) {
     if (!IsSensorEventEnable(ID_PROXIMITY))
         return -EPERM;
 
@@ -408,7 +408,7 @@ int SensorFW::GetProximityEvent(quint64 *ts, unsigned *value, bool *isNear) {
     return 0;
 }
 
-int SensorFW::GetStepcounterEvent(quint64 *ts, unsigned *value) {
+int SensorFW::GetStepcounterEvent(uint64_t *ts, unsigned *value) {
     if (!IsSensorEventEnable(ID_STEPCOUNTER))
         return -EPERM;
 
@@ -418,7 +418,7 @@ int SensorFW::GetStepcounterEvent(quint64 *ts, unsigned *value) {
     return 0;
 }
 
-int SensorFW::GetTemperatureEvent(quint64 *ts, unsigned *value) {
+int SensorFW::GetTemperatureEvent(uint64_t *ts, unsigned *value) {
     if (!IsSensorEventEnable(ID_TEMPERATURE))
         return -EPERM;
 

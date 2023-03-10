@@ -63,7 +63,7 @@ void waydroid::core::SensorfwLidSensor::disable_lid_events()
 
 void waydroid::core::SensorfwLidSensor::data_recived_impl()
 {
-    QVector<LidData> values;
+    std::vector<LidData> values;
     if(!m_socket->read<LidData>(values))
         return;
 

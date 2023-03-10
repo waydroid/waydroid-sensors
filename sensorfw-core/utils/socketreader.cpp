@@ -3,6 +3,7 @@
    @brief SocketReader helper class for sensor interface
 
    <p>
+   Copyright 2022 UBports Foundation.
    Copyright (C) 2009-2010 Nokia Corporation
 
    @author Timo Rongas <ext-timo.2.rongas@nokia.com>
@@ -26,10 +27,22 @@
 
 #include <utils/socketreader.h>
 
+#include <memory>
+#include <string>
+
+#include <glib.h>
+#include <gio/gio.h>
+#include <gio/ginputstream.h>
+#include <gio/giostream.h>
+#include <gio/goutputstream.h>
+#include <gio/gsocketclient.h>
+#include <gio/gsocketconnectable.h>
+#include <gio/gsocketconnection.h>
+#include <gio/gunixsocketaddress.h>
+
 const char* SocketReader::channelIDString = "_SENSORCHANNEL_";
 
-SocketReader::SocketReader(QObject* parent) :
-    QObject(parent),
+SocketReader::SocketReader() :
     socket_(NULL),
     tagRead_(false)
 {
@@ -45,29 +58,50 @@ SocketReader::~SocketReader()
 bool SocketReader::initiateConnection(int sessionId)
 {
     if (socket_ != NULL) {
-        qDebug() << "attempting to initiate connection on connected socket";
+        g_debug("attempting to initiate connection on connected socket");
         return false;
     }
 
-    socket_ = new QLocalSocket(this);
-    const char* SOCKET_NAME = "/var/run/sensord.sock";
-    QByteArray env = qgetenv("SENSORFW_SOCKET_PATH");
-    if (!env.isEmpty()) {
-        env += SOCKET_NAME;
-        SOCKET_NAME = env;
-    }
+    const std::string SOCKET_NAME {"/var/run/sensord.sock"};
+    const char* env = getenv("SENSORFW_SOCKET_PATH");
+    auto full_path = env ? env : "" + SOCKET_NAME;
+    auto sock_addr = std::unique_ptr<GSocketAddress, decltype(&g_object_unref)>{
+        g_unix_socket_address_new(full_path.c_str()), g_object_unref};
 
-    socket_->connectToServer(SOCKET_NAME, QIODevice::ReadWrite);
+    auto sock_client = std::unique_ptr<GSocketClient, decltype(&g_object_unref)>{
+        g_socket_client_new(), g_object_unref};
 
-    if (!(socket_->serverName().size())) {
-        qDebug() << socket_->errorString();
+    g_autoptr(GError) err = NULL;
+    socket_ = g_socket_client_connect(
+        sock_client.get(),
+        G_SOCKET_CONNECTABLE(sock_addr.get()),
+        /* cancellable */ NULL,
+        &err);
+
+    if (!socket_) {
+        g_debug("Failed to connect to socket: %s", err->message);
         return false;
     }
 
-    if (socket_->write((const char*)&sessionId, sizeof(sessionId)) != sizeof(sessionId)) {
-        qDebug() << "[SOCKETREADER]: SessionId write failed: " << socket_->errorString();
+    istream_ = g_io_stream_get_input_stream(G_IO_STREAM(socket_));
+    ostream_ = g_io_stream_get_output_stream(G_IO_STREAM(socket_));
+
+    if (!g_output_stream_write_all(
+            ostream_,
+            (const char*)&sessionId,
+            sizeof(sessionId),
+            /* (out) bytes_written */ NULL,
+            /* cancellable */ NULL,
+            &err)) {
+        g_debug("[SOCKETREADER]: SessionId write failed: %s", err->message);
+        g_clear_error(&err);
     }
-    socket_->flush();
+
+    if (!g_output_stream_flush(ostream_, /* cancellable */ NULL, &err)) {
+        g_debug("[SOCKETREADER]: flush write failed: %s", err->message);
+        g_clear_error(&err);
+    }
+
     readSocketTag();
 
     return true;
@@ -78,10 +112,15 @@ bool SocketReader::dropConnection()
     if (!socket_)
         return false;
 
-    socket_->disconnectFromServer();
-    if(socket_->state() != QLocalSocket::UnconnectedState)
-        socket_->waitForDisconnected();
-    delete socket_;
+    /* These are owned by socket */
+    istream_ = NULL;
+    ostream_ = NULL;
+
+    g_io_stream_close(
+        G_IO_STREAM(socket_),
+        /* cancellable */ NULL,
+        /* (out) err */ NULL);
+    g_object_unref(socket_);
     socket_ = NULL;
 
     tagRead_ = false;
@@ -89,17 +128,17 @@ bool SocketReader::dropConnection()
     return true;
 }
 
-QLocalSocket* SocketReader::socket()
+GSocketConnection* SocketReader::socket()
 {
     return socket_;
 }
 
 bool SocketReader::readSocketTag()
-{
-    char foo;
-    qRegisterMetaType<QAbstractSocket::SocketError>("QAbstractSocket::SocketError");
-    socket_->waitForReadyRead();
-    tagRead_ = read(&foo, 1);
+{   
+    tagRead_ = g_input_stream_skip(
+        istream_, /* count */ 1,
+        /* cancellable */ NULL,
+        /* (out) error */ NULL);
     return true;
 }
 
@@ -109,7 +148,13 @@ bool SocketReader::read(void* buffer, int size)
     int retry = 100;
     while(bytesRead < size)
     {
-        int bytes = socket_->read((char *)buffer + bytesRead, size);
+        int bytes = g_input_stream_read(
+            istream_,
+            (char *)buffer + bytesRead,
+            size - bytesRead,
+            /* cancellable */ NULL,
+            /* (out) err */ NULL);
+
         if(bytes == 0)
         {
             if(!retry)
@@ -130,5 +175,19 @@ bool SocketReader::read(void* buffer, int size)
 
 bool SocketReader::isConnected()
 {
-    return (socket_ && socket_->isValid() && socket_->state() == QLocalSocket::ConnectedState);
+    return (
+        socket_ &&
+        g_socket_connection_is_connected(socket_) && 
+        g_io_stream_is_closed(G_IO_STREAM(socket_)));
+}
+
+void SocketReader::skipAll()
+{
+    while (g_pollable_input_stream_is_readable(G_POLLABLE_INPUT_STREAM(istream_))) {
+        g_input_stream_skip(
+            istream_,
+            /* count */ G_MAXSIZE,
+            /* cancellable */ NULL,
+            /* (out) error */ NULL);
+    }
 }

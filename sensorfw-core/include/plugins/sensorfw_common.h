@@ -82,6 +82,7 @@ private:
     static gboolean static_data_recieved(GSocket * socket, GIOCondition cond, gpointer user_data);
 
     PluginType m_plugin;
+    std::unique_ptr<char, decltype(&free)> m_pluginPath;
     pid_t m_pid;
     int m_sessionid;
     std::unique_ptr<GSource, decltype(&g_source_unref)> m_gsource;

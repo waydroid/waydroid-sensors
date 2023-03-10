@@ -186,7 +186,7 @@ void SocketReader::skipAll()
     while (g_pollable_input_stream_is_readable(G_POLLABLE_INPUT_STREAM(istream_))) {
         g_input_stream_skip(
             istream_,
-            /* count */ G_MAXSIZE,
+            /* count */ G_MAXSSIZE,
             /* cancellable */ NULL,
             /* (out) error */ NULL);
     }

@@ -8,8 +8,6 @@ Build-Depends: cmake (>= 2.8.10),
                libglibutil-dev,
                libgbinder-dev (>= 1.1.20),
                pkg-config,
-               sensorfw-qt5,
-               qtbase5-dev,
 Maintainer: Erfan Abdi <erfangplus@gmail.com>
 Standards-Version: 3.9.5
 Homepage: https://github.com/WayDroid/waydroid-sensors

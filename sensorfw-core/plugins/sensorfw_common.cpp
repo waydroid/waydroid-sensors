@@ -264,6 +264,7 @@ void waydroid::core::Sensorfw::start()
     if (!result)
     {
         GINFO("failed to start SensorfwSensor");
+        stop();
         return;
     }
     g_variant_unref(result);

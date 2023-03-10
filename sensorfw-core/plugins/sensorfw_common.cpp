@@ -38,6 +38,7 @@ waydroid::core::Sensorfw::Sensorfw(
       dbus_event_loop{name},
       m_socket(std::make_shared<SocketReader>()),
       m_plugin(plugin),
+      m_pluginPath(nullptr, free),
       m_pid(getpid()),
       m_gsource(nullptr, g_source_unref)
 {
@@ -45,6 +46,12 @@ waydroid::core::Sensorfw::Sensorfw(
         throw std::runtime_error("Could not create sensorfw backend");
 
     request_sensor();
+
+    char *new_str;
+    if (asprintf(&new_str,"%s/%s", dbus_sensorfw_path, plugin_string()) == -1)
+        GINFO("Unable to create the plugin path.");
+    else
+        m_pluginPath.reset(new_str);
 
     GINFO("Got plugin_string %s", plugin_string());
     GINFO("Got plugin_interface %s", plugin_interface());
@@ -111,11 +118,10 @@ const char* waydroid::core::Sensorfw::plugin_interface() const
 
 const char* waydroid::core::Sensorfw::plugin_path() const
 {
-    char *new_str;
-    if (asprintf(&new_str,"%s/%s", dbus_sensorfw_path, plugin_string()) == -1)
+    if (!m_pluginPath)
         return "";
 
-    return new_str;
+    return m_pluginPath.get();
 }
 
 bool waydroid::core::Sensorfw::load_plugin()

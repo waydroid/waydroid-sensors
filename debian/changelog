@@ -1,3 +1,15 @@
+waydroid-sensors (0.2.0) xenial; urgency=medium
+
+  * sensorfw-core: sync the latest, Qt-less code from repowerd
+  * sensorfw/common: don't leak pluginPath
+  * utils/socketreader: fix integer overflow in skipAll()
+  * sensorfw_common: clean up after itself if it fails to start
+  * socketreader: log error and handle EOF more gracefully
+  * socketreader: correct isConnected() logic inversion
+  * debian/control: remove Qt related dependencies
+
+ -- Alessandro Astone <ales.astone@gmail.com>  Sun, 12 Mar 2023 11:47:40 +0000
+
 waydroid-sensors (0.1.1) xenial; urgency=medium
 
   * service: select hidl protocol at runtime

@@ -1,0 +1,15 @@
+[Unit]
+Description=Waydroid sensor daemon
+Requires=waydroid-container.service
+PartOf=waydroid-container.service
+After=waydroid-container.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/waydroid-sensord
+RestartSec=1
+TimeoutStartSec=5
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

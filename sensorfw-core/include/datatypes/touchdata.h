@@ -26,7 +26,7 @@
 #ifndef TOUCHDATA_H
 #define TOUCHDATA_H
 
-#include <genericdata.h>
+#include "genericdata.h"
 
 /**
  * @brief Datatype for device touchscreen events.

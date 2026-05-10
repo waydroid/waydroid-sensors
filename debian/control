@@ -17,6 +17,6 @@ Section: libs
 Architecture: any
 Depends: ${misc:Depends},
          ${shlibs:Depends},
-         libsensorfw-qt5-plugins,
+         libsensorfw-qt5-plugins (>= 0.14.0),
 Description: Provides android sensors HAL using libgbinder to waydroid
  Using sensorfw dbus and socket.

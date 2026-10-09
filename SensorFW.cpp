@@ -301,7 +301,7 @@ int SensorFW::DisableSensorEvents(int id) {
     return 0;
 }
 
-int SensorFW::GetAccelerometerEvent(uint64_t *ts, int *x, int *y, int *z) {
+int SensorFW::GetAccelerometerEvent(uint64_t *ts, float *x, float *y, float *z) {
     if (!IsSensorEventEnable(ID_ACCELEROMETER))
         return -EPERM;
 
@@ -313,7 +313,7 @@ int SensorFW::GetAccelerometerEvent(uint64_t *ts, int *x, int *y, int *z) {
     return 0;
 }
 
-int SensorFW::GetGyroscopeEvent(uint64_t *ts, int *x, int *y, int *z) {
+int SensorFW::GetGyroscopeEvent(uint64_t *ts, float *x, float *y, float *z) {
     if (!IsSensorEventEnable(ID_GYROSCOPE))
         return -EPERM;
 

@@ -20,6 +20,7 @@
 #include <utils/dbus_connection_handle.h>
 
 #include <stdexcept>
+#include <stdint.h>
 
 waydroid::core::DBusConnectionHandle::DBusConnectionHandle(std::string const& address)
 {

@@ -67,5 +67,6 @@ void waydroid::core::SensorfwAccelerometerSensor::data_recived_impl()
     if(!m_socket->read<AccelerationData>(values))
         return;
 
-    handler(values[0]);
+    for (auto const& value : values)
+        handler(value);
 }

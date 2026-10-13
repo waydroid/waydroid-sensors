@@ -67,5 +67,6 @@ void waydroid::core::SensorfwProximitySensor::data_recived_impl()
     if(!m_socket->read<ProximityData>(values))
         return;
 
-    handler(values[0]);
+    for (auto const& value : values)
+        handler(value);
 }

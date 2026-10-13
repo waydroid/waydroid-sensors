@@ -32,66 +32,40 @@ static int64_t now_ns(void) {
     return (int64_t)ts.tv_sec * 1000000000 + ts.tv_nsec;
 }
 
-/* Pick up one pending sensor event. On success, this returns the sensor
- * id, and sets |*event| accordingly. On failure, i.e. if there are no
- * pending events, return -EINVAL.
- *
- * Note: The device's lock must be acquired.
- */
-static int sensor_device_pick_pending_event_locked(SensorDevice *d,
-                                                   sensors_event_t* event)
+// Drop the oldest events beyond this, in case nobody polls.
+static const size_t kMaxQueuedEvents = 4096;
+
+/* Note: The device's lock must be acquired. */
+static void queue_event_locked(SensorDevice *d, const sensors_event_t &event)
 {
-    uint32_t mask = SUPPORTED_SENSORS & d->pendingSensors;
-    if (mask) {
-        uint32_t i = 31 - __builtin_clz(mask);
-        d->pendingSensors &= ~(1U << i);
-        // Copy the structure
-        *event = d->sensors[i];
-
-        if (d->sensors[i].sensorType == SENSOR_TYPE_META_DATA) {
-            if (d->flush_count[i] > 0) {
-                // Another 'flush' is queued after this one.
-                // Don't clear this event; just decrement the count.
-                (d->flush_count[i])--;
-                // And re-mark it as pending
-                d->pendingSensors |= (1U << i);
-            } else {
-                // We are done flushing
-                // sensor_event_cb() will leave
-                // the meta-data in place until we have it.
-                // Set |type| to something other than META_DATA
-                // so sensor_event_cb() can
-                // continue.
-                d->sensors[i].sensorType = SENSOR_TYPE_ACCELEROMETER;
-            }
-        } else {
-            event->sensorHandle = i;
-            //event->version = sizeof(*event);
-        }
-
-        return i;
-    }
-    GERR("No sensor to return!!! pendingSensors=0x%08x", d->pendingSensors);
-    // we may end-up in a busy loop, slow things down, just in case.
-    usleep(1000);
-    return -EINVAL;
+    if (d->queue->size() >= kMaxQueuedEvents)
+        d->queue->pop_front();
+    d->queue->push_back(event);
 }
 
-/* Block until new sensor events are reported by the emulator, or if a
- * 'wake' command is received through the service. On succes, return 0
- * and updates the |pendingEvents| and |sensors| fields of |dev|.
- * On failure, return -errno.
- *
- * Note: The device lock must be acquired when calling this function, and
- *       will still be held on return. However, the function releases the
- *       lock temporarily during the blocking wait.
+/* Map a sensorfw sample time (microseconds) to CLOCK_BOOTTIME nanoseconds.
+ * The hybris adaptors pass on the Android HAL's boottime stamp, which shares
+ * the kernel with the container. Others stamp with CLOCK_MONOTONIC, which
+ * drifts from boottime on every suspend, so fall back to arrival time there.
+ */
+static int64_t event_time_ns(SensorDevice *d, int id, uint64_t ts_us)
+{
+    const int64_t now = now_ns();
+    int64_t t = (int64_t)ts_us * 1000;
+    if (t <= 0 || t > now || now - t > 1000000000LL)
+        t = now;
+    if (t <= d->last_event_ns[id])
+        t = d->last_event_ns[id] + 1;
+    d->last_event_ns[id] = t;
+    return t;
+}
+
+/* Called on a sensorfw thread for every sample: convert it and queue it for
+ * poll().
  */
 static void sensor_event_cb(void *userdata, int id)
 {
     SensorDevice* dev = (SensorDevice*) userdata;
-    // Accumulate pending events into |events| and |new_sensors| mask
-    // until a 'sync' or 'wake' command is received. This also simplifies the
-    // code a bit.
     uint32_t new_sensors = 0U;
     sensors_event_t* events = dev->sensors;
 
@@ -100,10 +74,6 @@ static void sensor_event_cb(void *userdata, int id)
     int x, y, z, rx, ry, rz, tmp;
     unsigned value;
     bool isNear;
-
-    // If the existing entry for this sensor is META_DATA,
-    // do not overwrite it. We can resume saving sensor
-    // values after that meta data has been received.
 
     switch (id) {
         case ID_ACCELEROMETER:
@@ -168,11 +138,13 @@ static void sensor_event_cb(void *userdata, int id)
                 }
                 if (ts != dev->last_TimeStamp[ID_MAGNETIC_FIELD_UNCALIBRATED]) {
                     new_sensors |= SENSORS_MAGNETIC_FIELD_UNCALIBRATED;
-                    events[ID_MAGNETIC_FIELD_UNCALIBRATED].u.vec3.x = rx / 1000.0f;
-                    events[ID_MAGNETIC_FIELD_UNCALIBRATED].u.vec3.y = ry / 1000.0f;
-                    events[ID_MAGNETIC_FIELD_UNCALIBRATED].u.vec3.z = rz / 1000.0f;
-                    events[ID_MAGNETIC_FIELD_UNCALIBRATED].u.vec3.status = ACCURACY_HIGH;
-                    events[ID_MAGNETIC_FIELD_UNCALIBRATED].sensorType = SENSOR_TYPE_MAGNETIC_FIELD;
+                    events[ID_MAGNETIC_FIELD_UNCALIBRATED].u.uncal.x = rx / 1000.0f;
+                    events[ID_MAGNETIC_FIELD_UNCALIBRATED].u.uncal.y = ry / 1000.0f;
+                    events[ID_MAGNETIC_FIELD_UNCALIBRATED].u.uncal.z = rz / 1000.0f;
+                    events[ID_MAGNETIC_FIELD_UNCALIBRATED].u.uncal.x_bias = (rx - x) / 1000.0f;
+                    events[ID_MAGNETIC_FIELD_UNCALIBRATED].u.uncal.y_bias = (ry - y) / 1000.0f;
+                    events[ID_MAGNETIC_FIELD_UNCALIBRATED].u.uncal.z_bias = (rz - z) / 1000.0f;
+                    events[ID_MAGNETIC_FIELD_UNCALIBRATED].sensorType = SENSOR_TYPE_MAGNETIC_FIELD_UNCALIBRATED;
                     dev->last_TimeStamp[ID_MAGNETIC_FIELD_UNCALIBRATED] = ts;
                 }
             }
@@ -191,7 +163,7 @@ static void sensor_event_cb(void *userdata, int id)
             if (dev->mSensorFWDevice->GetPressureEvent(&ts, &value) == 0) {
                 if (ts != dev->last_TimeStamp[ID_PRESSURE]) {
                     new_sensors |= SENSORS_PRESSURE;
-                    events[ID_PRESSURE].u.scalar = value;
+                    events[ID_PRESSURE].u.scalar = value / 100.0f; // Pa -> hPa
                     events[ID_PRESSURE].sensorType = SENSOR_TYPE_PRESSURE;
                     dev->last_TimeStamp[ID_PRESSURE] = ts;
                 }
@@ -232,41 +204,19 @@ static void sensor_event_cb(void *userdata, int id)
     }
 
     if (new_sensors) {
-        /* update the time of each new sensor event. */
-        dev->pendingSensors |= new_sensors;
-        int64_t t = ts * 1000LL;
-
-        /* Use the time at the first "sync:" as the base for later
-         * time values.
-         * CTS tests require sensors to return an event timestamp (sync) that is
-         * strictly before the time of the event arrival. We don't actually have
-         * a time syncronization protocol here, and the only data point is the
-         * "sync:" timestamp - which is an emulator's timestamp of a clock that
-         * is synced with the guest clock, and it only the timestamp after all
-         * events were sent.
-         * To make it work, let's compare the calculated timestamp with current
-         * time and take the lower value - we don't believe in events from the
-         * future anyway.
-         */
-        const int64_t now = now_ns();
-
-        if (dev->timeStart == 0) {
-            dev->timeStart  = now;
-            dev->timeOffset = dev->timeStart - t;
-        }
-        t += dev->timeOffset;
-        if (t > now) {
-            t = now;
-        }
-
+        pthread_mutex_lock(&dev->lock);
         while (new_sensors) {
             uint32_t i = 31 - __builtin_clz(new_sensors);
             new_sensors &= ~(1U << i);
-            dev->sensors[i].timestamp = t;
+            events[i].timestamp = event_time_ns(dev, i, ts);
+            events[i].sensorHandle = i;
+            queue_event_locked(dev, events[i]);
         }
+        pthread_mutex_unlock(&dev->lock);
+        // Wakes poll(); unlike quitting a loop, this is not lost if poll()
+        // has not started waiting yet.
+        g_main_context_wakeup(NULL);
     }
-    if (dev->waiting_for_data)
-        g_main_loop_quit(dev->loop);
 }
 
 Sensors::Sensors()
@@ -274,22 +224,23 @@ Sensors::Sensors()
     mSensorDevice = (SensorDevice *) malloc(sizeof(*mSensorDevice));
     memset(mSensorDevice, 0, sizeof(*mSensorDevice));
 
-    // (sensorType == SENSOR_TYPE_META_DATA) is
-    // sticky. Don't start off with that setting.
-    for (int idx = 0; idx < MAX_NUM_SENSORS; idx++) {
+    for (int idx = 0; idx < MAX_NUM_SENSORS; idx++)
         mSensorDevice->sensors[idx].sensorType = SENSOR_TYPE_ACCELEROMETER;
-        mSensorDevice->flush_count[idx] = 0;
-    }
+    mSensorDevice->queue = new std::deque<sensors_event_t>();
+    pthread_mutex_init(&mSensorDevice->lock, NULL);
 
     mSensorDevice->mSensorFWDevice = new SensorFW();
     mSensorDevice->mSensorFWDevice->RegisterSensors(sensor_event_cb, mSensorDevice);
-
-    pthread_mutex_init(&mSensorDevice->lock, NULL);
-    mSensorDevice->loop = g_main_loop_new(NULL, TRUE);
 }
 
 std::vector<sensor_t> Sensors::getSensorsList() {
     std::vector<sensor_t> out_vector;
+
+    // What sensorfw can deliver, so Android does not cap requests at 100 Hz.
+    auto minDelay = [this](int id) {
+        int us = mSensorDevice->mSensorFWDevice->GetMinDelay(id);
+        return us > 0 ? us : 10000;
+    };
 
     int sensors_count = 0;
     
@@ -311,7 +262,7 @@ std::vector<sensor_t> Sensors::getSensorsList() {
             sensor_info.maxRange = 39.3;
             sensor_info.resolution = 1.0 / 4032.0;
             sensor_info.power = 3.0;
-            sensor_info.minDelay = 10000;
+            sensor_info.minDelay = minDelay(id);
             sensor_info.fifoReservedEventCount = 0;
             sensor_info.fifoMaxEventCount = 0;
             sensor_info.requiredPermission.data.str = "";
@@ -337,7 +288,7 @@ std::vector<sensor_t> Sensors::getSensorsList() {
             sensor_info.maxRange = 16.46;
             sensor_info.resolution = 1.0 / 1000.0;
             sensor_info.power = 3.0;
-            sensor_info.minDelay = 10000;
+            sensor_info.minDelay = minDelay(id);
             sensor_info.fifoReservedEventCount = 0;
             sensor_info.fifoMaxEventCount = 0;
             sensor_info.requiredPermission.data.str = "";
@@ -415,7 +366,7 @@ std::vector<sensor_t> Sensors::getSensorsList() {
             sensor_info.maxRange = 2000.0;
             sensor_info.resolution = .5;
             sensor_info.power = 6.7;
-            sensor_info.minDelay = 10000;
+            sensor_info.minDelay = minDelay(id);
             sensor_info.fifoReservedEventCount = 0;
             sensor_info.fifoMaxEventCount = 0;
             sensor_info.requiredPermission.data.str = "";
@@ -441,7 +392,7 @@ std::vector<sensor_t> Sensors::getSensorsList() {
             sensor_info.maxRange = 2000.0;
             sensor_info.resolution = 0.5;
             sensor_info.power = 6.7;
-            sensor_info.minDelay = 10000;
+            sensor_info.minDelay = minDelay(id);
             sensor_info.fifoReservedEventCount = 0;
             sensor_info.fifoMaxEventCount = 0;
             sensor_info.requiredPermission.data.str = "";
@@ -493,7 +444,7 @@ std::vector<sensor_t> Sensors::getSensorsList() {
             sensor_info.maxRange = 800.0;
             sensor_info.resolution = 1.0;
             sensor_info.power = 20.0;
-            sensor_info.minDelay = 10000;
+            sensor_info.minDelay = minDelay(id);
             sensor_info.fifoReservedEventCount = 0;
             sensor_info.fifoMaxEventCount = 0;
             sensor_info.requiredPermission.data.str = "";
@@ -610,8 +561,9 @@ int Sensors::activate(
     uint32_t mask = (1U << handle);
     uint32_t sensors = enabled ? mask : 0;
 
-    pthread_mutex_lock(&mSensorDevice->lock);
-
+    // No dev->lock here: Enable/Disable wait for the sensorfw loop thread,
+    // which takes dev->lock to queue samples, so holding it deadlocks.
+    // active_sensors is only touched here, on the binder (main) thread.
     uint32_t active = mSensorDevice->active_sensors;
     uint32_t new_sensors = (active & ~mask) | (sensors & mask);
     uint32_t changed = active ^ new_sensors;
@@ -623,50 +575,43 @@ int Sensors::activate(
             mSensorDevice->mSensorFWDevice->DisableSensorEvents(handle);
         mSensorDevice->active_sensors = new_sensors;
     }
-    pthread_mutex_unlock(&mSensorDevice->lock);
+    return RESULT_OK;
+}
+
+int Sensors::batch(int32_t handle, int64_t samplingPeriodNs) {
+    if (!ID_CHECK(handle)) {
+        GERR("batch: bad handle ID: %d", handle);
+        return RESULT_BAD_VALUE;
+    }
+    mSensorDevice->mSensorFWDevice->SetSamplingPeriod(handle, samplingPeriodNs);
     return RESULT_OK;
 }
 
 std::vector<sensors_event_t> Sensors::poll(int32_t maxCount, int *err_out) {
     std::vector<sensors_event_t> out;
-    int err = 0;
 
     if (maxCount <= 0) {
-        err = -EINVAL;
-    } else {
-        int bufferSize = maxCount <= kPollMaxBufferSize ? maxCount : kPollMaxBufferSize;
-
-        if (!mSensorDevice->pendingSensors) {
-            mSensorDevice->waiting_for_data = true;
-            g_main_loop_run(mSensorDevice->loop);
-            mSensorDevice->waiting_for_data = false;
-        }
-        out.resize(bufferSize);
-
-        /* Now read as many pending events as needed. */
-        for (int i = 0; i < bufferSize; i++)  {
-            if (!mSensorDevice->pendingSensors) {
-                break;
-            }
-            int ret = sensor_device_pick_pending_event_locked(mSensorDevice, &out[i]);
-            if (ret < 0) {
-                if (!err) {
-                    err = ret;
-                }
-                break;
-            }
-            err++;
-        }
-    }
-
-out:
-    if (err < 0) {
         *err_out = RESULT_BAD_VALUE;
         return out;
     }
+    size_t bufferSize = maxCount <= kPollMaxBufferSize ? maxCount : kPollMaxBufferSize;
 
-    const size_t count = (size_t)err;
-    out.resize(count);
+    // Keep dispatching the main context (binder calls arrive there) until
+    // there is something to return.
+    for (;;) {
+        pthread_mutex_lock(&mSensorDevice->lock);
+        bool ready = !mSensorDevice->queue->empty() || mSensorDevice->killed;
+        if (ready) {
+            while (out.size() < bufferSize && !mSensorDevice->queue->empty()) {
+                out.push_back(mSensorDevice->queue->front());
+                mSensorDevice->queue->pop_front();
+            }
+        }
+        pthread_mutex_unlock(&mSensorDevice->lock);
+        if (ready)
+            break;
+        g_main_context_iteration(NULL, TRUE);
+    }
 
     *err_out = RESULT_OK;
     return out;
@@ -679,28 +624,24 @@ int Sensors::flush(int32_t handle) {
         return RESULT_BAD_VALUE;
     }
 
+    sensors_event_t event;
+    memset(&event, 0, sizeof(event));
+    event.sensorType = SENSOR_TYPE_META_DATA;
+    event.sensorHandle = handle;
+    event.u.meta.what = META_DATA_FLUSH_COMPLETE;
+
+    // Queued behind any data already waiting, as the HAL contract requires.
     pthread_mutex_lock(&mSensorDevice->lock);
-    if ((mSensorDevice->pendingSensors & (1U << handle)) &&
-        mSensorDevice->sensors[handle].sensorType == SENSOR_TYPE_META_DATA)
-    {
-        // A 'flush' operation is already pending. Just increment the count.
-        (mSensorDevice->flush_count[handle])++;
-    } else {
-        mSensorDevice->flush_count[handle] = 0;
-        mSensorDevice->sensors[handle].sensorType = SENSOR_TYPE_META_DATA;
-        mSensorDevice->sensors[handle].timestamp = 0;
-        mSensorDevice->sensors[handle].sensorHandle = handle;
-        mSensorDevice->sensors[handle].u.meta.what = META_DATA_FLUSH_COMPLETE;
-        mSensorDevice->pendingSensors |= (1U << handle);
-    }
+    queue_event_locked(mSensorDevice, event);
     pthread_mutex_unlock(&mSensorDevice->lock);
-    
+    g_main_context_wakeup(NULL);
+
     return RESULT_OK;
 }
 
 void Sensors::killLoops() {
-    if (mSensorDevice->waiting_for_data)
-        g_main_loop_quit(mSensorDevice->loop);
+    mSensorDevice->killed = true;
+    g_main_context_wakeup(NULL);
 }
 
 }  // namespace implementation

@@ -268,6 +268,8 @@ void waydroid::core::Sensorfw::start()
         return;
     }
     g_variant_unref(result);
+
+    apply_data_rate();
 }
 
 void waydroid::core::Sensorfw::stop()
@@ -321,4 +323,79 @@ void waydroid::core::Sensorfw::set_interval(int interval) {
         return;
     }
     g_variant_unref(result);
+}
+
+void waydroid::core::Sensorfw::set_data_rate(double hz)
+{
+    dbus_event_loop.enqueue(
+        [this, hz]
+        {
+            if (hz == m_rate_hz)
+                return;
+            m_rate_hz = hz;
+            if (m_gsource)
+                apply_data_rate();
+        }).get();
+}
+
+void waydroid::core::Sensorfw::apply_data_rate()
+{
+    if (m_rate_hz <= 0)
+        return;
+
+    int constexpr timeout_default = 1000;
+    auto const result = g_dbus_connection_call_sync(
+            dbus_connection,
+            dbus_sensorfw_name,
+            plugin_path(),
+            plugin_interface(),
+            "setDataRate",
+            g_variant_new("(id)", m_sessionid, m_rate_hz),
+            NULL,
+            G_DBUS_CALL_FLAGS_NONE,
+            timeout_default,
+            NULL,
+            NULL);
+
+    if (!result)
+    {
+        GINFO("setDataRate(%.1f) failed", m_rate_hz);
+        return;
+    }
+    g_variant_unref(result);
+}
+
+int waydroid::core::Sensorfw::min_interval_us()
+{
+    double min_ms = 0;
+    dbus_event_loop.enqueue(
+        [this, &min_ms]
+        {
+            int constexpr timeout_default = 1000;
+            auto const result = g_dbus_connection_call_sync(
+                    dbus_connection,
+                    dbus_sensorfw_name,
+                    plugin_path(),
+                    plugin_interface(),
+                    "getAvailableIntervals",
+                    NULL,
+                    G_VARIANT_TYPE("(a(ddd))"),
+                    G_DBUS_CALL_FLAGS_NONE,
+                    timeout_default,
+                    NULL,
+                    NULL);
+            if (!result)
+                return;
+
+            // DataRange: (min, max, resolution), in milliseconds.
+            GVariantIter *iter;
+            double lo, hi, res;
+            g_variant_get(result, "(a(ddd))", &iter);
+            while (g_variant_iter_next(iter, "(ddd)", &lo, &hi, &res))
+                if (lo > 0 && (min_ms == 0 || lo < min_ms))
+                    min_ms = lo;
+            g_variant_iter_free(iter);
+            g_variant_unref(result);
+        }).get();
+    return (int)(min_ms * 1000);
 }

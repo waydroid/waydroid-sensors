@@ -168,11 +168,13 @@ static void sensor_event_cb(void *userdata, int id)
                 }
                 if (ts != dev->last_TimeStamp[ID_MAGNETIC_FIELD_UNCALIBRATED]) {
                     new_sensors |= SENSORS_MAGNETIC_FIELD_UNCALIBRATED;
-                    events[ID_MAGNETIC_FIELD_UNCALIBRATED].u.vec3.x = rx / 1000.0f;
-                    events[ID_MAGNETIC_FIELD_UNCALIBRATED].u.vec3.y = ry / 1000.0f;
-                    events[ID_MAGNETIC_FIELD_UNCALIBRATED].u.vec3.z = rz / 1000.0f;
-                    events[ID_MAGNETIC_FIELD_UNCALIBRATED].u.vec3.status = ACCURACY_HIGH;
-                    events[ID_MAGNETIC_FIELD_UNCALIBRATED].sensorType = SENSOR_TYPE_MAGNETIC_FIELD;
+                    events[ID_MAGNETIC_FIELD_UNCALIBRATED].u.uncal.x = rx / 1000.0f;
+                    events[ID_MAGNETIC_FIELD_UNCALIBRATED].u.uncal.y = ry / 1000.0f;
+                    events[ID_MAGNETIC_FIELD_UNCALIBRATED].u.uncal.z = rz / 1000.0f;
+                    events[ID_MAGNETIC_FIELD_UNCALIBRATED].u.uncal.x_bias = (rx - x) / 1000.0f;
+                    events[ID_MAGNETIC_FIELD_UNCALIBRATED].u.uncal.y_bias = (ry - y) / 1000.0f;
+                    events[ID_MAGNETIC_FIELD_UNCALIBRATED].u.uncal.z_bias = (rz - z) / 1000.0f;
+                    events[ID_MAGNETIC_FIELD_UNCALIBRATED].sensorType = SENSOR_TYPE_MAGNETIC_FIELD_UNCALIBRATED;
                     dev->last_TimeStamp[ID_MAGNETIC_FIELD_UNCALIBRATED] = ts;
                 }
             }
@@ -191,7 +193,7 @@ static void sensor_event_cb(void *userdata, int id)
             if (dev->mSensorFWDevice->GetPressureEvent(&ts, &value) == 0) {
                 if (ts != dev->last_TimeStamp[ID_PRESSURE]) {
                     new_sensors |= SENSORS_PRESSURE;
-                    events[ID_PRESSURE].u.scalar = value;
+                    events[ID_PRESSURE].u.scalar = value / 100.0f; // Pa -> hPa
                     events[ID_PRESSURE].sensorType = SENSOR_TYPE_PRESSURE;
                     dev->last_TimeStamp[ID_PRESSURE] = ts;
                 }

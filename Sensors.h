@@ -26,6 +26,8 @@
 #include "hybrisbindertypes.h"
 #include "SensorFW.h"
 
+#include <deque>
+
 using waydroid::SensorFW;
 
 namespace waydroid {
@@ -37,15 +39,14 @@ constexpr char kWaydroidVendor[] = "The Waydroid Project";
 typedef struct SensorDevice {
     SensorFW *mSensorFWDevice;
     uint64_t last_TimeStamp[MAX_NUM_SENSORS];
+    int64_t last_event_ns[MAX_NUM_SENSORS];
+    // Scratch event per sensor, filled by the sensorfw threads.
     sensors_event_t sensors[MAX_NUM_SENSORS];
-    uint32_t pendingSensors;
-    int64_t timeStart;
-    int64_t timeOffset;
+    // Events and flush-complete markers in delivery order, guarded by |lock|.
+    std::deque<sensors_event_t> *queue;
     uint32_t active_sensors;
-    int flush_count[MAX_NUM_SENSORS];
     pthread_mutex_t lock;
-    GMainLoop* loop;
-    bool waiting_for_data;
+    bool killed;
 } SensorDevice;
 
 struct Sensors {
@@ -53,6 +54,7 @@ struct Sensors {
 
     std::vector<sensor_t> getSensorsList();
     int activate(int32_t handle, bool enabled);
+    int batch(int32_t handle, int64_t samplingPeriodNs);
     std::vector<sensors_event_t> poll(int32_t maxCount, int *err_out);
     int flush(int32_t handle);
     void killLoops();

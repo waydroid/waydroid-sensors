@@ -135,6 +135,8 @@ struct SensorFW {
     bool IsSensorEventEnable(int id);
     int EnableSensorEvents(int id);
     int DisableSensorEvents(int id);
+    int SetSamplingPeriod(int id, int64_t period_ns);
+    int GetMinDelay(int id);
 
     int GetAccelerometerEvent(uint64_t *ts, float *x, float *y, float *z);
     int GetGyroscopeEvent(uint64_t *ts, float *x, float *y, float *z);
@@ -151,6 +153,7 @@ struct SensorFW {
 private:
     SensorData *data;
     std::vector<waydroid::core::HandlerRegistration> mRegistrations;
+    int64_t mPeriodNs[MAX_NUM_SENSORS] = {};
 };
 
 }  // namespace waydroid

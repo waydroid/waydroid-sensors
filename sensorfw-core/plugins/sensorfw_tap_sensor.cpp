@@ -67,5 +67,6 @@ void waydroid::core::SensorfwTapSensor::data_recived_impl()
     if(!m_socket->read<TapData>(values))
         return;
 
-    handler(values[0]);
+    for (auto const& value : values)
+        handler(value);
 }

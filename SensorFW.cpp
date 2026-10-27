@@ -301,6 +301,48 @@ int SensorFW::DisableSensorEvents(int id) {
     return 0;
 }
 
+static waydroid::core::Sensorfw *rate_sensor(SensorData *data, int id) {
+    switch (id) {
+    case ID_ACCELEROMETER:
+        return data->accelerometer_sensor.get();
+    case ID_GYROSCOPE:
+        return data->gyroscope_sensor.get();
+    case ID_MAGNETIC_FIELD:
+    case ID_MAGNETIC_FIELD_UNCALIBRATED:
+        return data->magnetometer_sensor.get();
+    case ID_PRESSURE:
+        return data->pressure_sensor.get();
+    default:
+        return nullptr;
+    }
+}
+
+int SensorFW::SetSamplingPeriod(int id, int64_t period_ns) {
+    if (!IsSensorAvailable(id))
+        return -ENODEV;
+    auto sensor = rate_sensor(data, id);
+    if (!sensor)
+        return 0;
+
+    mPeriodNs[id] = period_ns;
+    // Both magnetometer handles share one sensorfw session; serve the faster.
+    if (id == ID_MAGNETIC_FIELD || id == ID_MAGNETIC_FIELD_UNCALIBRATED) {
+        int64_t other = mPeriodNs[id == ID_MAGNETIC_FIELD ?
+            ID_MAGNETIC_FIELD_UNCALIBRATED : ID_MAGNETIC_FIELD];
+        if (other > 0 && (period_ns <= 0 || other < period_ns))
+            period_ns = other;
+    }
+    sensor->set_data_rate(period_ns > 0 ? 1e9 / period_ns : 0);
+    return 0;
+}
+
+int SensorFW::GetMinDelay(int id) {
+    if (!IsSensorAvailable(id))
+        return 0;
+    auto sensor = rate_sensor(data, id);
+    return sensor ? sensor->min_interval_us() : 0;
+}
+
 int SensorFW::GetAccelerometerEvent(uint64_t *ts, float *x, float *y, float *z) {
     if (!IsSensorEventEnable(ID_ACCELEROMETER))
         return -EPERM;

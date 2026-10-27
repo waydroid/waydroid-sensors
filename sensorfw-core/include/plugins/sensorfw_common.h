@@ -59,6 +59,12 @@ public:
         PluginType const& plugin);
     virtual ~Sensorfw();
 
+    // Rate the session asks sensorfw for; 0 = sensorfw's default.
+    // Re-applied on every start(), since sensorfw drops it when a session stops.
+    void set_data_rate(double hz);
+    // Shortest interval sensorfw reports for this sensor, or 0 if unknown.
+    int min_interval_us();
+
 protected:
     virtual void data_recived_impl() = 0;
 
@@ -72,6 +78,7 @@ protected:
 
 private:
     void request_sensor();
+    void apply_data_rate();
     bool release_sensor();
     bool load_plugin();
 
@@ -85,6 +92,7 @@ private:
     std::unique_ptr<char, decltype(&free)> m_pluginPath;
     pid_t m_pid;
     int m_sessionid;
+    double m_rate_hz = 0;
     std::unique_ptr<GSource, decltype(&g_source_unref)> m_gsource;
 };
 }

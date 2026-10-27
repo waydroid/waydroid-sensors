@@ -67,5 +67,6 @@ void waydroid::core::SensorfwCompassSensor::data_recived_impl()
     if(!m_socket->read<CompassData>(values))
         return;
 
-    handler(values[0]);
+    for (auto const& value : values)
+        handler(value);
 }

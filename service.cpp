@@ -258,11 +258,12 @@ app_reply(
         const char* iface = gbinder_remote_request_interface(req);
 
         if (!g_strcmp0(iface, DEFAULT_IFACE)) {
-            gint32 tmp = 0;
-            gint64 tmp64 = 0;
-            gbinder_reader_read_int32(&reader, &tmp);
-            gbinder_reader_read_int64(&reader, &tmp64);
-            gbinder_reader_read_int64(&reader, &tmp64);
+            gint32 handle = 0;
+            gint64 samplingPeriodNs = 0;
+            gint64 maxReportLatencyNs = 0;
+            gbinder_reader_read_int32(&reader, &handle);
+            gbinder_reader_read_int64(&reader, &samplingPeriodNs);
+            gbinder_reader_read_int64(&reader, &maxReportLatencyNs);
 
             reply = gbinder_local_object_new_reply(obj);
 
@@ -270,7 +271,8 @@ app_reply(
             *status = GBINDER_STATUS_OK;
 
             gbinder_local_reply_init_writer(reply, &writer);
-            gbinder_writer_append_int32(&writer, RESULT_OK);
+            gbinder_writer_append_int32(&writer,
+                app->service->batch(handle, samplingPeriodNs));
         } else {
             GDEBUG("Unexpected interface \"%s\"", iface);
         }

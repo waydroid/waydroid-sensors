@@ -48,3 +48,13 @@ target_include_directories(waydroid-sensord PUBLIC
 )
 
 install(TARGETS waydroid-sensord RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+configure_file(
+	waydroid-sensors.service.in
+	${CMAKE_CURRENT_BINARY_DIR}/waydroid-sensors.service
+)
+
+install(
+	FILES ${CMAKE_CURRENT_BINARY_DIR}/waydroid-sensors.service
+	DESTINATION /usr/lib/systemd/system/
+)
